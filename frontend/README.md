@@ -368,4 +368,4 @@ Connect the GitHub repo, set `VITE_API_URL` to the Railway backend URL as an env
 **Extension**
 After deploying the backend, update the `API_BASE` constant in the service worker to the Railway URL, rebuild with `npm run build`, and reload the unpacked extension. For the demo, load it unpacked — Chrome Web Store submission is not needed for a university project.
 
-The FastAPI auto-generated docs at `/docs` on your Railway URL serve as API documentation evidence for the report appendix.
+The FastAPI auto-generated docs at `/docs` on your Railway URL serve as API documentation evidence for the report appendix
