@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from enum import Enum
+
 #Define Verdict Enum
 class Verdict(str, Enum):
     CLEAN = "Clean";
@@ -25,7 +26,7 @@ class UserResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str;
-    token_type = "bearer";
+    token_type:str = "bearer";
 
 class URLRequest(BaseModel):
     url: str;
@@ -43,9 +44,12 @@ class LayerResult(BaseModel):
     weight: float;
 
 class AnalysisResponse(BaseModel):
-    scan_id = UUID;
+    scan_id: UUID;
     risk_score: int;
     verdict: Verdict;
     top_reasons: List[str];
     layers_list: List[LayerResult];
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class HomeResponse(BaseModel):
+    message:str;

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from .schemas import HomeResponse
 cors_allowed_origins = [
     "http://localhost:5173",
 ]
@@ -15,6 +15,6 @@ app.add_middleware(
     allow_headers=["Content-Type"]
 )
 
-@app.get('/home')
+@app.get('/home', response_model=HomeResponse)
 def home():
     return{"message":"Welcome"}
