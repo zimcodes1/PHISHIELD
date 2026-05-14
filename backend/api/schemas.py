@@ -19,7 +19,7 @@ class UserCreate(BaseModel):
         from_attributes = True
 
 class UserResponse(BaseModel):
-    id: int;
+    id: UUID;
     email: EmailStr;
     fullname: str;
     created_at: datetime;
