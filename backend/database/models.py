@@ -26,7 +26,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password= Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    scans =  relationship('Scan', )
+    scans =  relationship('Scan', back_populates='user')
+    feedback = relationship("Feedback", back_populates="user")
 
 
 class Scan(Base):
@@ -57,12 +58,12 @@ class Scan(Base):
 
 class Feedback(Base):
     __tablename__ = 'feedback',
-    id = Column(String, default=generate_uuid, nullable=False, index=True)
+    id = Column(String, primary_key=True, default=generate_uuid, nullable=False, index=True)
     scan_id = Column(String, ForeignKey('scans.id'), nullable=False, index=True)
     user_id = Column(String, ForeignKey('users.id'), nullable=False, index=True)
     user_verdict = Column(SAEnum(UserVerdict), nullable=False)
     note = Column(Text, nullable=True)
     created_at =  Column(DateTime, default=datetime.datetime.utcnow)
     scan = relationship('Scan', back_populates='feedback')
-    user = relationship('User')
+    user = relationship('User', back_populates='feedback')
 

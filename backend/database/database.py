@@ -6,7 +6,7 @@ DATABASE_URL = "sqlite:///./datbase.db"
 
 # connect_args={"check_same_thread": False} is mandatory ONLY for SQLite.
 # It allows FastAPI to interact with the database across multiple threads safely.
-engine = create_engine(DATABASE_URL, connect_args={"check_same_tread":False})
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread":False})
 
 
 # Create a session factory for generating isolated database transactions
