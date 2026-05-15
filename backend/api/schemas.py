@@ -11,8 +11,7 @@ class Verdict(str, Enum):
     PHISHING = "Phishing";
 
 class UserCreate(BaseModel):
-    username: str;
-    fullname:str;
+    full_name:str;
     email:EmailStr;
     password:SecretStr = Field(..., min_length=8);
     class Config:
@@ -22,9 +21,9 @@ class UserCreate(BaseModel):
         # Visual documentation mapping inside FastAPI Swagger UI
         json_schema_extra = {
             "example": {
+                "fullname": "John Doe",
                 "email": "user@example.com",
-                "password": "SuperSecurePassword123",
-                "full_name": "John Doe"
+                "password": "SuperSecurePassword123"
             }
         }
 

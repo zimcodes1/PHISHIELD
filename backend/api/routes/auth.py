@@ -28,8 +28,7 @@ def register_user(user_in:UserCreate, db: Session = Depends(get_db)):
     #Hash plain text using passlib context and prepare DB entity
     db_user = User(
         email=user_in.email,
-        username=user_in.username,
-        fullname=user_in.fullname,
+        fullname=user_in.full_name,
         password=hash_password(raw_password)
     )
     # Commit to database and populate the auto-generated UUID string

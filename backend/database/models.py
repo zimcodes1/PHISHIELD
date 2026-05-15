@@ -25,7 +25,6 @@ class User(Base):
     id = Column(String, primary_key=True, default=generate_uuid, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     fullname = Column(String, nullable=False)
-    username = Column(String, unique=True, index=True, nullable=False)
     password= Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     scans =  relationship('Scan', back_populates='user')
