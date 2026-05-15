@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db
 from database.models import User
-from utils.auth_utils import hash_password, verify_password, create_access_token
-from schemas import UserCreate, UserResponse, TokenResponse
+from api.utils.auth_utils import hash_password, verify_password, create_access_token
+from api.schemas import UserCreate, UserResponse, TokenResponse
 
 router = APIRouter(prefix='/api/v1/auth', tags=["Authentication"])
 
@@ -19,7 +19,7 @@ def register_user(user_in:UserCreate, db: Session = Depends(get_db)):
     # Extract raw password string from Pydantic SecretStr object
     raw_password = user_in.password.get_secret_value()
     # Enforce uniqueness on email fields
-    email_exists = db.query(User).filter(User.email == user_in.email)
+    email_exists = db.query(User).filter(User.email == user_in.email).first()
     if email_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -27,10 +27,10 @@ def register_user(user_in:UserCreate, db: Session = Depends(get_db)):
         )
     #Hash plain text using passlib context and prepare DB entity
     db_user = User(
-        email=user_in.email, 
-        username=user_in.username, 
-        fullname=user_in.username, 
-        hashed_password=hash_password(raw_password)
+        email=user_in.email,
+        username=user_in.username,
+        fullname=user_in.fullname,
+        password=hash_password(raw_password)
     )
     # Commit to database and populate the auto-generated UUID string
     db.add(db_user)
@@ -47,7 +47,7 @@ def login_user(formdata:OAuth2PasswordRequestForm = Depends(), db: Session = Dep
     # OAuth2 form payload maps the user's email string to form_data.username
     user = db.query(User).filter(User.email == formdata.username).first()
     # Fail cleanly on either username mismatch OR bad password string
-    if not user or not verify_password(formdata.password, user.hashed_password):
+    if not user or not verify_password(formdata.password, str(user.password)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

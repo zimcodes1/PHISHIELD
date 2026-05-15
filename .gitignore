@@ -3,3 +3,5 @@ backend/api/__pycache__/
 backend/database/__pycache__/
 backend/datbase.db
 backend/.env
+backend/api/routes/__pycache__/
+backend/api/utils/__pycache__/

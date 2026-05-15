@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Depends, status
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from .schemas import HomeResponse
 
 from database.database import engine, Base, get_db
 from database.models import User
+from .dependencies import get_current_user
+from api.routes.auth import router as auth_router
 
 # Executed immediately on application module import.
 # It inspects local engine directory and establishes 'sql_app.db' instantly.
@@ -24,6 +25,9 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=["Content-Type"]
 )
+
+#Register public auth routes
+app.include_router(auth_router)
 
 @app.get('/check-health')
 def check_sync_status(db:Session=Depends(get_db)):

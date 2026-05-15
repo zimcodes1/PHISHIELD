@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db
 from database.models import User
-from utils.auth_utils import decode_access_token
+from api.utils.auth_utils import decode_access_token
 
 # Instructs FastAPI to look for a bearer token at this specific endpoint path
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
