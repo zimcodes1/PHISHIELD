@@ -17,6 +17,16 @@ class UserCreate(BaseModel):
     password:SecretStr = Field(..., min_length=8);
     class Config:
         from_attributes = True
+        # Prevents client payloads from sending unmapped fields to your API
+        extra = "forbid"
+        # Visual documentation mapping inside FastAPI Swagger UI
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+                "password": "SuperSecurePassword123",
+                "full_name": "John Doe"
+            }
+        }
 
 class UserResponse(BaseModel):
     id: UUID;
