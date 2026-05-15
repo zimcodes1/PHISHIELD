@@ -1,8 +1,10 @@
 import os
+from dotenv import load_dotenv
 from typing import Tuple
 import httpx
 from .base import UrlSubCheck
 
+load_dotenv()
 
 class GoogleSafeBrowsingCheck(UrlSubCheck):
     name = "google_safe_browsing"
@@ -12,7 +14,7 @@ class GoogleSafeBrowsingCheck(UrlSubCheck):
         self.api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY")
         self.endpoint = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
 
-    def _execute(self, url: str) -> Tuple[float, str]:
+    async def _execute(self, url: str) -> Tuple[float, str]:
         payload = {
             "client": {"clientId": "phishshield", "clientVersion": "1.0"},
             "threatInfo": {
