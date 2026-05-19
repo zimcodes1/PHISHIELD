@@ -1,6 +1,6 @@
 import httpx
 from typing import Tuple
-from base import UrlSubCheck
+from detection.url_analyzer.base import UrlSubCheck
 
 class UrlHausLookup(UrlSubCheck):
     name = "url_haus_lookup"

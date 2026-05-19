@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple
 
 logger = logging.getLogger(__name__)
@@ -25,3 +26,6 @@ class UrlSubCheck:
 
     def _fallback_score(self) -> Tuple[float, str]:
         return 0.0, ""
+
+class ReputationAnalysisLayer:
+    pass

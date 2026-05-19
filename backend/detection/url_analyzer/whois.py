@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 from datetime import datetime, timezone
 from typing import Tuple
 
-from whois import whois as whois_query
+from whois import whois as whois_query # type: ignore
 
 from detection.url_analyzer.base import UrlSubCheck
 

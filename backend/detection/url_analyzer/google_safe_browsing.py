@@ -1,7 +1,7 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv #type: ignore
 from typing import Tuple
-import httpx
+import httpx #type: ignore
 from .base import UrlSubCheck
 
 load_dotenv()

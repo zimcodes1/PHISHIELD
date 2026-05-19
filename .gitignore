@@ -6,3 +6,4 @@ backend/.env
 backend/api/routes/__pycache__/
 backend/api/utils/__pycache__/
 backend/detection/url_analyzer/__pycache__/
+backend/detection/__pycache__/

@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse
 from typing import Tuple
 
-from Levenshtein import distance as levenshtein_distance
+from Levenshtein import distance as levenshtein_distance  # type: ignore
 
 from detection.url_analyzer.base import UrlSubCheck
 
