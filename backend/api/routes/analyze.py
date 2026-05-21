@@ -1,17 +1,34 @@
 from fastapi import APIRouter, Depends, HTTPException
-from api.dependencies import get_current_user
+from api.dependencies import get_current_user, get_db
 from api.schemas import URLRequest, EmailRequest, AnalysisResponse
 from database.models import User
 from detection.pipeline import run_url_pipeline, run_email_pipeline
-
+from database.models import Scan
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix='/api/v1/analyze', tags=["Analyser"])
 
 
 @router.post('/url', response_model=AnalysisResponse)
-async def analyze_url(request: URLRequest, current_user: User = Depends(get_current_user)):
+async def analyze_url(request: URLRequest, current_user: User = Depends(get_current_user), db:Session = Depends(get_db), ):
     try:
-        return await run_url_pipeline(request)
+        scan_result =  await run_url_pipeline(request)
+        risk_score = scan_result.risk_score
+        verdict = scan_result.verdict
+        # Persist scan result to database with associated user and input details
+        db_scan = Scan(
+            user_id=current_user.id, 
+            scan_type='url', 
+            input_value=request.url, 
+            risk_score=risk_score, 
+            verdict=verdict.value,
+            top_reasons=scan_result.top_reasons,
+            layers_list=[layer.model_dump() for layer in scan_result.layers_list],
+        )
+        db.add(db_scan)
+        db.commit()
+        db.refresh(db_scan)
+        return scan_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
