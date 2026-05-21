@@ -7,6 +7,7 @@ from api.schemas import (
     AnalysisResponse, EmailRequest, LayerResult, URLRequest, Verdict,
 )
 from detection.url_layer import analyze_url
+from detection.nlp_layer import analyze_nlp
 
 # --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
 # Visual (Layer 4) is excluded here — it runs async post-response via /analyze/visual
@@ -55,13 +56,8 @@ def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int
 
 
 # ---------------------------------------------------------------------------
-# Stub analyzers — replaced with real implementations in Week 2
+# Stub analyzer — replaced with real implementation in Week 2
 # ---------------------------------------------------------------------------
-
-async def _run_nlp(text: str) -> tuple[float, list[str]]:
-    """Layer 2 — NLP (GPT-4o-mini). Returns neutral score until implemented."""
-    return 0.3, ["NLP analysis unavailable"]
-
 
 async def _run_headers(raw_headers: str) -> tuple[float, list[str]]:
     """Layer 3 — Header analysis. Returns neutral score until implemented."""
@@ -79,7 +75,7 @@ async def run_url_pipeline(request: URLRequest) -> AnalysisResponse:
     """
     (url_score, url_reasons), (nlp_score, nlp_reasons) = await asyncio.gather(
         analyze_url(request.url),
-        _run_nlp(request.url),
+        analyze_nlp(request.url),
     )
 
     layers_data = {
@@ -112,8 +108,8 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
     nlp_input = f"{request.subject}\n\n{request.body}"[:2000]
 
     tasks = [
-        analyze_url(request.sender),   # Layer 1 — run on sender domain
-        _run_nlp(nlp_input),           # Layer 2
+        analyze_url(request.sender),
+        analyze_nlp(nlp_input),
     ]
     has_headers = bool(request.raw_headers)
     if has_headers:
