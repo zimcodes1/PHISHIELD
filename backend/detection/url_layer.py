@@ -43,5 +43,3 @@ async def analyze_url(url: str) -> Tuple[float, list[str]]:
     ]
     return final_score, reasons
 
-results  = analyze_url("https://www.google.com")
-print(results)
