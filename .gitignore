@@ -1,0 +1,16 @@
+backend/datbase.db
+backend/api/__pycache__/app.cpython-313.pyc
+backend/api/__pycache__/dependencies.cpython-313.pyc
+backend/api/__pycache__/schemas.cpython-313.pyc
+backend/api/routes/__pycache__/auth.cpython-313.pyc
+backend/api/utils/__pycache__/auth_utils.cpython-313.pyc
+ml/uv.lock
+backend/detection/url_analyzer/__pycache__/whois.cpython-313.pyc
+backend/detection/url_analyzer/__pycache__/urlhaus_lookup.cpython-313.pyc
+backend/detection/url_analyzer/__pycache__/google_safe_browsing.cpython-313.pyc
+backend/detection/url_analyzer/__pycache__/heuristics_rules.cpython-313.pyc
+backend/detection/url_analyzer/__pycache__/base.cpython-313.pyc
+backend/detection/url_analyzer/__pycache__/__init__.cpython-313.pyc
+backend/detection/__pycache__/url_layer.cpython-313.pyc
+backend/database/__pycache__/models.cpython-313.pyc
+backend/database/__pycache__/database.cpython-313.pyc
