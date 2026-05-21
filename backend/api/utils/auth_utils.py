@@ -15,7 +15,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Global Configuration Parameters
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRY_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRY")
+ACCESS_TOKEN_EXPIRY_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRY_MINUTES")
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -34,7 +34,7 @@ def create_access_token(user_id:UUID) -> str:
             return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         else:
              raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Server misconfiguration"
+                detail="Server Misconfiguration Error"
              )
 
 def decode_access_token(token:str) -> UUID:

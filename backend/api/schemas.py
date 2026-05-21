@@ -11,14 +11,12 @@ class Verdict(str, Enum):
     PHISHING = "Phishing";
 
 class UserCreate(BaseModel):
-    full_name:str;
-    email:EmailStr;
-    password:SecretStr = Field(..., min_length=8);
+    fullname: str;
+    email: EmailStr;
+    password: SecretStr = Field(..., min_length=8);
     class Config:
         from_attributes = True
-        # Prevents client payloads from sending unmapped fields to your API
         extra = "forbid"
-        # Visual documentation mapping inside FastAPI Swagger UI
         json_schema_extra = {
             "example": {
                 "fullname": "John Doe",

@@ -1,8 +1,8 @@
 from urllib.parse import urlparse
 from datetime import datetime, timezone
-from typing import Tuple
+from typing import Tuple, Any
 
-from whois import whois as whois_query # type: ignore
+from whois import whois as whois_query  # type: ignore
 
 from detection.url_analyzer.base import UrlSubCheck
 
@@ -19,8 +19,8 @@ class WhoisAgeCheck(UrlSubCheck):
         domain = domain.split(":")[0]
 
         try:
-            w = whois_query(domain)
-            creation_date = w.creation_date
+            w: Any = whois_query(domain)
+            creation_date = getattr(w, "creation_date", None)
             if isinstance(creation_date, list):
                 creation_date = creation_date[0]
             if creation_date is None:

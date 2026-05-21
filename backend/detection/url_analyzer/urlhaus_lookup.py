@@ -1,47 +1,39 @@
+import os
 import httpx
 from typing import Tuple
+from dotenv import load_dotenv  # type: ignore
 from detection.url_analyzer.base import UrlSubCheck
+
+load_dotenv()
 
 class UrlHausLookup(UrlSubCheck):
     name = "url_haus_lookup"
     weight = 0.15
-    
-    # Define class constants for your credentials and URLhaus base setup
-    API_URL = "https://abuse.ch"
-    AUTH_KEY = "YOUR_ABUSE_CH_AUTH_KEY"  # Replace with your key
+
+    API_URL = "https://urlhaus-api.abuse.ch/v1/url/"
+
+    def __init__(self) -> None:
+        self.api_key = os.getenv("URLHAUS_API_KEY")
 
     async def _execute(self, url: str) -> Tuple[float, str]:
-        # URLhaus endpoints expect key-value pairs formatted as urlencoded data
-        payload = {
-            "url": url
-        }
-        
-        # Optional: Include your Auth-Key in the headers to prevent rate limits
-        headers = {
-            "Auth-Key": self.AUTH_KEY
-        }
-        
+        payload = {"url": url}
+        headers = {"Auth-Key": self.api_key} if self.api_key else {}
+
         try:
-            # URLhaus lookups require a POST request with body parameters
             async with httpx.AsyncClient() as client:
-                response = await client.post(self.API_URL, data=payload, headers=headers)
+                response = await client.post(self.API_URL, data=payload, headers=headers, timeout=5.0)
             response.raise_for_status()
             
             data = response.json()
             query_status = data.get("query_status")
             
-            # Outcome 1: The URL is known to URLhaus and actively malicious
-            if query_status == "ok":
-                url_status = data.get("url_status")
-                threat_type = data.get("threat", "unknown_threat")
-                
-                # Assign maximum weight/score if the threat site is currently active
+            if query_status == "is_listed":
+                url_status = data.get("url_status", "unknown")
+                threat_type = data.get("threat", "unknown")
                 score = 1.0 if url_status == "online" else 0.5
-                return score, f"Malicious status: {url_status} ({threat_type})"
-                
-            # Outcome 2: The URL is not present in the malicious dataset
+                return score, f"URLhaus: {url_status} — {threat_type}"
             elif query_status == "no_results":
-                return 0.0, "Safe"
+                return 0.0, ""
                 
             # Outcome 3: The API structure rejected the payload
             else:

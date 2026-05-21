@@ -8,7 +8,7 @@ from api.schemas import (
 )
 from detection.url_layer import analyze_url
 
-# --- Ensemble layer weights (Section 6.4) ---
+# --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
 # Visual (Layer 4) is excluded here — it runs async post-response via /analyze/visual
 _WEIGHTS = {
     "url":     0.30,

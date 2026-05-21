@@ -11,6 +11,7 @@ dependencies = [
     "joblib>=1.5.3",
     "numpy>=2.4.6",
     "openai>=2.36.0",
+    "pandas>=3.0.3",
     "passlib>=1.7.4",
     "psycopg2-binary>=2.9.12",
     "pydantic-settings>=2.14.1",
@@ -20,6 +21,7 @@ dependencies = [
     "python-levenshtein>=0.27.3",
     "python-multipart>=0.0.28",
     "python-whois>=0.9.6",
+    "scikit-learn==1.7.2",
     "sqlalchemy>=2.0.49",
     "uvicorn[standard]>=0.46.0",
 ]

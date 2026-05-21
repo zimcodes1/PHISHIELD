@@ -4,6 +4,7 @@ from typing import Tuple
 
 import joblib
 import numpy as np
+import pandas as pd
 
 from detection.url_analyzer.base import UrlSubCheck
 
@@ -121,7 +122,7 @@ class RFModelCheck(UrlSubCheck):
         for feat, median in TIER3_MEDIANS.items():
             features[feat] = median
 
-        vector = np.array([[features[f] for f in FEATURES]])
+        vector = pd.DataFrame([[features[f] for f in FEATURES]], columns=FEATURES)
         # predict_proba returns [[prob_legit, prob_phishing]]
         phishing_prob: float = self.model.predict_proba(vector)[0][1]
 
@@ -144,11 +145,11 @@ def _is_phishing_signal(feature: str, value: int) -> bool:
     """Returns True if the feature value is the phishing-indicative direction."""
     # Features where 1 = phishing signal
     phishing_on_one = {"UsingIP", "LongURL", "ShortURL", "Symbol@", "AnchorURL",
-                       "LinksInScriptTags", "RequestURL"}
+                       "LinksInScriptTags", "RequestURL", "AgeofDomain",
+                       "WebsiteTraffic", "DomainRegLen"}
     # Features where -1 = phishing signal
     phishing_on_neg = {"PrefixSuffix-", "SubDomains", "HTTPS",
-                       "ServerFormHandler", "WebsiteTraffic", "AgeofDomain",
-                       "DomainRegLen", "GoogleIndex", "DNSRecording"}
+                       "ServerFormHandler", "GoogleIndex", "DNSRecording"}
 
     if feature in phishing_on_one:
         return value == 1
