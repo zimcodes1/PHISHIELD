@@ -1,0 +1,78 @@
+
+╔════════════════════════════════════════════════════════════════════════╗
+║                   PHISHIELD DUAL MODEL TRAINING REPORT                 ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+DATASET INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Total Samples:          11,054
+  Phishing (Class 1):     6,157 (55.7%)
+  Legitimate (Class 0):   4,897 (44.3%)
+  
+  Training Set:           8,843 samples
+  Test Set:               2,211 samples
+
+MODEL A (EXTENSION MODEL - EDGE DEPLOYMENT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Features:               11 (Tier 1+2: Lexical + DOM)
+  Hyperparameters:        RandomForest(n_estimators=100, random_state=42)
+  
+  Performance Metrics:
+    • Accuracy:           0.9498 (94.98%)
+    • Precision:          0.9498
+    • Recall:             0.9498
+    • F1 Score:           0.9497
+    • ROC-AUC:            0.9892
+  
+  Model File:             model_a.onnx
+  Serialization:          ONNX (web-friendly, ~200KB)
+  Inference Speed:        <5ms per prediction
+  Privacy:                ✓ Full privacy preservation (no network calls)
+  Location:               Browser extension (bundled at build time)
+
+MODEL B (SERVER MODEL - FULL FEATURES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Features:               16 (Tier 1+2+3: Lexical + DOM + Network)
+  Hyperparameters:        RandomForest(n_estimators=100, random_state=42)
+  
+  Performance Metrics:
+    • Accuracy:           0.9616 (96.16%)
+    • Precision:          0.9616
+    • Recall:             0.9616
+    • F1 Score:           0.9615
+    • ROC-AUC:            0.9917
+  
+  Model File:             model_b.pkl
+  Serialization:          Joblib pickle
+  Inference Speed:        ~1ms per prediction
+  Privacy:                ✗ Requires network calls for Tier 3 features
+  Location:               FastAPI backend (loaded at startup)
+
+PRIVACY-ACCURACY TRADEOFF ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Accuracy Improvement (B vs A):  +1.18%
+  F1 Score Improvement (B vs A):  +1.18%
+  ROC-AUC Improvement (B vs A):   +0.25%
+  
+  RESEARCH CONTRIBUTION:
+  The 1.18% F1 score improvement quantifies the accuracy cost of
+  achieving privacy-preserving edge inference. Model A achieves 94.97% F1
+  without sending user browsing data to external servers.
+
+EXPORTED ARTIFACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/model_a.onnx (2.39 MB)
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/model_b.pkl (8.72 MB)
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/confusion_matrices.png
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/feature_importance.png
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/roc_comparison.png
+  ✓ /home/azimeh/Desktop/Code/PHISHIELD/ml/models/feature_extraction_contract.csv
+
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Copy model_a.onnx to extension/models/model_a.onnx
+  2. Copy model_b.pkl to backend/models/model_b.pkl
+  3. Integrate both models into their respective pipelines
+  4. Test inference with feature extraction contract verification
+
+═══════════════════════════════════════════════════════════════════════════
