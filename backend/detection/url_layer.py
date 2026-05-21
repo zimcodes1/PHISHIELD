@@ -4,13 +4,13 @@ from typing import Tuple
 from detection.url_analyzer.google_safe_browsing import GoogleSafeBrowsingCheck
 from detection.url_analyzer.urlhaus_lookup import UrlHausLookup
 from detection.url_analyzer.whois import WhoisAgeCheck
-from detection.url_analyzer.heuristics_rules import HeuristicsCheck
+from detection.url_analyzer.rf_model import RFModelCheck
 
 _SUB_CHECKS = [
+    RFModelCheck(),
     GoogleSafeBrowsingCheck(),
     UrlHausLookup(),
     WhoisAgeCheck(),
-    HeuristicsCheck(),
 ]
 
 

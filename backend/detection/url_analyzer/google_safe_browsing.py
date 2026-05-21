@@ -8,7 +8,7 @@ load_dotenv()
 
 class GoogleSafeBrowsingCheck(UrlSubCheck):
     name = "google_safe_browsing"
-    weight = 0.4
+    weight = 0.3
 
     def __init__(self) -> None:
         self.api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY")

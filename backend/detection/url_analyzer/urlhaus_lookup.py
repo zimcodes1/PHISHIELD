@@ -4,7 +4,7 @@ from detection.url_analyzer.base import UrlSubCheck
 
 class UrlHausLookup(UrlSubCheck):
     name = "url_haus_lookup"
-    weight = 0.3
+    weight = 0.15
     
     # Define class constants for your credentials and URLhaus base setup
     API_URL = "https://abuse.ch"
