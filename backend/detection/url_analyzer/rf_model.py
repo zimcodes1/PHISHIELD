@@ -32,9 +32,9 @@ SHORTENER_DOMAINS = {
 
 # Median fallback values for Tier 3 features when unavailable
 TIER3_MEDIANS = {
-    "WebsiteTraffic": 0,   # -1/0/1 encoded; 0 = mid-range
+    "WebsiteTraffic": -1,  # -1 = high traffic (safe default — unknown sites assumed established)
     "AgeofDomain": -1,     # -1 = old domain (safe default)
-    "DomainRegLen": -1,
+    "DomainRegLen": -1,    # -1 = long registration (safe default)
     "GoogleIndex": 1,
     "DNSRecording": 1,
 }
