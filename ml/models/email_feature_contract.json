@@ -1,0 +1,54 @@
+{
+  "model": "RandomForestClassifier",
+  "onnx_input": {
+    "name": "float_input",
+    "shape": [
+      null,
+      24
+    ],
+    "feature_order": [
+      "subject_len",
+      "body_len",
+      "total_len",
+      "word_count",
+      "unique_word_ratio",
+      "uppercase_ratio",
+      "digit_ratio",
+      "punctuation_count",
+      "exclamation_count",
+      "question_count",
+      "url_count",
+      "email_count",
+      "suspicious_word_count",
+      "money_word_count",
+      "brand_word_count",
+      "has_html",
+      "sender_domain_len",
+      "sender_is_free_mail",
+      "spf_fail",
+      "dkim_fail",
+      "dmarc_fail",
+      "auth_missing",
+      "reply_to_mismatch",
+      "return_path_mismatch"
+    ]
+  },
+  "backend_input_schema": {
+    "subject": "str",
+    "body": "str",
+    "sender": "EmailStr",
+    "raw_headers": "Optional[str]"
+  },
+  "output": {
+    "probability_column": 1,
+    "class_0": "legitimate",
+    "class_1": "phishing"
+  },
+  "metrics": {
+    "accuracy": 0.8759849678748939,
+    "precision": 0.8966605950212507,
+    "recall": 0.8607063760345028,
+    "f1": 0.8783156893065303,
+    "roc_auc": 0.9474206737199458
+  }
+}
