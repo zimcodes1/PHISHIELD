@@ -1,0 +1,25 @@
+@import 'tailwindcss/';
+
+@theme {
+  /* ── Brand blues ── */
+  --color-brand-50:  #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;   /* primary blue */
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+
+  /* ── Neutrals ── */
+  --color-surface:   #ffffff;   /* page / card background */
+  --color-muted:     #f8fafc;   /* input / subtle bg */
+  --color-border:    #e2e8f0;   /* input borders */
+  --color-text:      #0f172a;   /* primary text */
+  --color-text-soft: #64748b;   /* secondary / placeholder text */
+
+  /* ── Semantic ── */
+  --color-danger:    #ef4444;   /* phishing / error */
+  --color-warning:   #f59e0b;   /* suspicious */
+  --color-success:   #22c55e;   /* clean / safe */
+}
