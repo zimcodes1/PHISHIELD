@@ -8,3 +8,4 @@ backend/api/utils/__pycache__/
 backend/detection/url_analyzer/__pycache__/
 backend/detection/__pycache__/
 ml/uv.lock
+extension/
