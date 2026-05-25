@@ -8,6 +8,7 @@ from api.schemas import (
 )
 from detection.url_layer import analyze_url
 from detection.nlp_layer import analyze_nlp
+from detection.header_analyzer import analyze_headers
 
 # --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
 # Visual (Layer 4) is excluded here — it runs async post-response via /analyze/visual
@@ -63,9 +64,9 @@ def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int
 # Stub analyzer — replaced with real implementation in Week 2
 # ---------------------------------------------------------------------------
 
-async def _run_headers(raw_headers: str) -> tuple[float, list[str]]:
-    """Layer 3 — Header analysis. Returns neutral score until implemented."""
-    return 0.0, []
+async def _run_headers(raw_headers: str, sender: str = "") -> tuple[float, list[str]]:
+    """Layer 3 — Header analysis using SPF/DKIM/DMARC and metadata rules."""
+    return analyze_headers(raw_headers, sender)
 
 
 # ---------------------------------------------------------------------------
@@ -117,7 +118,7 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
     ]
     has_headers = bool(request.raw_headers)
     if has_headers:
-        tasks.append(_run_headers(request.raw_headers))  # type: ignore[arg-type]
+        tasks.append(_run_headers(request.raw_headers, request.sender))  # type: ignore[arg-type]
 
     results = await asyncio.gather(*tasks)
 
