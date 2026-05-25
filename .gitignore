@@ -9,3 +9,4 @@ backend/detection/url_analyzer/__pycache__/
 backend/detection/__pycache__/
 ml/uv.lock
 extension/
+backend/detection/email_analyzer/__pycache__/

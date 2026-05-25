@@ -9,11 +9,13 @@ from api.schemas import (
 from detection.url_layer import analyze_url
 from detection.nlp_layer import analyze_nlp
 from detection.header_analyzer import analyze_headers
+from detection.email_analyzer import analyze_email_rf
 
 # --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
 # Visual (Layer 4) is excluded here — it runs async post-response via /analyze/visual
 _WEIGHTS = {
     "url":     0.30,
+    "email_rf": 0.30,
     "nlp":     0.35,
     "headers": 0.20,
 }
@@ -113,7 +115,7 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
     nlp_input = f"{request.subject}\n\n{request.body}"[:2000]
 
     tasks = [
-        analyze_url(request.sender),
+        analyze_email_rf(request),
         analyze_nlp(nlp_input),
     ]
     has_headers = bool(request.raw_headers)
@@ -122,19 +124,19 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
 
     results = await asyncio.gather(*tasks)
 
-    url_score, url_reasons, url_sub_checks = results[0]
+    email_rf_score, email_rf_reasons = results[0]
     nlp_score,  nlp_reasons  = results[1]
     hdr_score,  hdr_reasons  = results[2] if has_headers else (None, [])
 
     layers_data: dict[str, Optional[tuple[float, list[str]]]] = {
-        "url": (url_score, url_reasons),
+        "email_rf": (email_rf_score, email_rf_reasons),
         "nlp": (nlp_score, nlp_reasons),
         "headers": (hdr_score, hdr_reasons) if has_headers else None,  # type: ignore[dict-item]
     }
     risk_score, top_reasons = _ensemble(layers_data)
 
     layers_list = [
-        _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons, url_sub_checks),
+        _build_layer_result("Email RF Model", _WEIGHTS["email_rf"], email_rf_score, email_rf_reasons),
         _build_layer_result("NLP",            _WEIGHTS["nlp"], nlp_score, nlp_reasons),
     ]
     if has_headers:
