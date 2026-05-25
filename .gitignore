@@ -12,3 +12,4 @@ backend/.env
 backend/api/routes/__pycache__/
 backend/detection/__pycache__/
 backend/detection/url_analyzer/__pycache__/
+extension/
