@@ -76,4 +76,4 @@ def _normalize_url(url: str) -> str:
         return candidate
     if "@" in candidate and "/" not in candidate:
         candidate = candidate.rsplit("@", 1)[-1]
-    return f"http://{candidate}"
+    return f"https://{candidate}"
