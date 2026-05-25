@@ -10,3 +10,4 @@ backend/detection/__pycache__/
 ml/uv.lock
 extension/
 backend/detection/email_analyzer/__pycache__/
+backend/models/email_rf_model.pkl
