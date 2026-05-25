@@ -49,6 +49,7 @@ class LayerResult(BaseModel):
     score: float;
     reasons: List[str];
     weight: float;
+    sub_checks: Optional[List["LayerResult"]] = None;
 
 class AnalysisResponse(BaseModel):
     scan_id: UUID;

@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from urllib.parse import urlparse
 from typing import Tuple
 
@@ -112,7 +113,9 @@ class RFModelCheck(UrlSubCheck):
     name = "rf_model_b"
     weight = 0.40
 
-    def __init__(self, model_path: str = "models/model_b.pkl") -> None:
+    def __init__(self, model_path: str | None = None) -> None:
+        if model_path is None:
+            model_path = str(Path(__file__).resolve().parents[2] / "models" / "model_b.pkl")
         self.model = joblib.load(model_path)
 
     async def _execute(self, url: str) -> Tuple[float, str]:
@@ -137,6 +140,8 @@ class RFModelCheck(UrlSubCheck):
             ][:3]
             if triggered:
                 reason = f"Model flagged: {', '.join(triggered)}"
+            else:
+                reason = "Model flagged URL as suspicious"
 
         return phishing_prob, reason
 

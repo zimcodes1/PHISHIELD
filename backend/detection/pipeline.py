@@ -26,8 +26,12 @@ def _compute_verdict(score: int) -> Verdict:
     return Verdict.CLEAN
 
 
-def _build_layer_result(name: str, weight: float, score: float, reasons: list[str]) -> LayerResult:
-    return LayerResult(name=name, score=score, reasons=reasons, weight=weight)
+def _build_layer_result(
+    name: str, weight: float, score: float,
+    reasons: list[str],
+    sub_checks: list[LayerResult] | None = None,
+) -> LayerResult:
+    return LayerResult(name=name, score=score, reasons=reasons, weight=weight, sub_checks=sub_checks)
 
 
 def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int, list[str]]:
@@ -73,7 +77,7 @@ async def run_url_pipeline(request: URLRequest) -> AnalysisResponse:
     URL scan: Layer 1 (URL+RF) and Layer 2 (NLP) run concurrently.
     Layer 3 (Headers) is skipped — weight redistributed automatically.
     """
-    (url_score, url_reasons), (nlp_score, nlp_reasons) = await asyncio.gather(
+    (url_score, url_reasons, url_sub_checks), (nlp_score, nlp_reasons) = await asyncio.gather(
         analyze_url(request.url),
         analyze_nlp(request.url),
     )
@@ -85,7 +89,7 @@ async def run_url_pipeline(request: URLRequest) -> AnalysisResponse:
     risk_score, top_reasons = _ensemble(layers_data)
 
     layers_list = [
-        _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons),
+        _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons, url_sub_checks),
         _build_layer_result("NLP",            _WEIGHTS["nlp"], nlp_score, nlp_reasons),
     ]
 
@@ -117,7 +121,7 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
 
     results = await asyncio.gather(*tasks)
 
-    url_score,  url_reasons  = results[0]
+    url_score, url_reasons, url_sub_checks = results[0]
     nlp_score,  nlp_reasons  = results[1]
     hdr_score,  hdr_reasons  = results[2] if has_headers else (None, [])
 
@@ -129,7 +133,7 @@ async def run_email_pipeline(request: EmailRequest) -> AnalysisResponse:
     risk_score, top_reasons = _ensemble(layers_data)
 
     layers_list = [
-        _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons),
+        _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons, url_sub_checks),
         _build_layer_result("NLP",            _WEIGHTS["nlp"], nlp_score, nlp_reasons),
     ]
     if has_headers:
