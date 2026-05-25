@@ -8,7 +8,7 @@ from api.schemas import (
 )
 from detection.url_layer import analyze_url
 from detection.nlp_layer import analyze_nlp
-from detection.header_analyzer import analyze_headers
+from detection.email_analyzer.header_analyzer import analyze_headers
 from detection.email_analyzer import analyze_email_rf
 
 # --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
