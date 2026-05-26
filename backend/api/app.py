@@ -32,7 +32,7 @@ app.include_router(auth_router)
 #Register protected analysis routes
 app.include_router(analyzer_routes)
 
-@app.get('/check-health')
+@app.get('/check-health', tags=["App Status"])
 def check_sync_status(db:Session=Depends(get_db)):
     # Simple query check ensuring database reads work flawlessly
     user_count = db.query(User).count()

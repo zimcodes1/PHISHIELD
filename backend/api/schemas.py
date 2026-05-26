@@ -30,10 +30,18 @@ class UserResponse(BaseModel):
     email: EmailStr;
     fullname: str;
     created_at: datetime;
+    class Config:
+        from_attributes = True
 
 class TokenResponse(BaseModel):
     access_token: str;
-    token_type:str = "bearer";
+    refresh_token: str;
+    token_type: str = "bearer";
+    class Config:
+        from_attributes = True
+
+class RefreshRequest(BaseModel):
+    refresh_token: str;
 
 class URLRequest(BaseModel):
     url: str;
@@ -43,6 +51,8 @@ class EmailRequest(BaseModel):
     body: str;
     sender: EmailStr;
     raw_headers: Optional[str] = None;
+    class Config:
+        from_attributes = True
 
 class LayerResult(BaseModel):
     name: str;
@@ -50,6 +60,8 @@ class LayerResult(BaseModel):
     reasons: List[str];
     weight: float;
     sub_checks: Optional[List["LayerResult"]] = None;
+    class Config:
+        from_attributes = True
 
 class AnalysisResponse(BaseModel):
     scan_id: UUID;
@@ -58,6 +70,13 @@ class AnalysisResponse(BaseModel):
     top_reasons: List[str];
     layers_list: List[LayerResult];
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    class Config:
+        from_attributes = True
 
-class HomeResponse(BaseModel):
-    message:str;
+class UserProfile(BaseModel):
+    id: UUID;
+    email: EmailStr;
+    fullname: str;
+    created_at: datetime;
+    class Config:
+        from_attributes = True
