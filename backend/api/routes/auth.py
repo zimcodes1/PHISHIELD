@@ -8,8 +8,9 @@ from api.dependencies import get_current_user
 from api.utils.auth_utils import (
     hash_password, verify_password,
     create_access_token, create_refresh_token, decode_refresh_token,
+    create_reset_token, decode_reset_token, send_reset_email,
 )
-from api.schemas import UserCreate, UserResponse, TokenResponse, UserProfile, RefreshRequest, UpdatePasswordRequest
+from api.schemas import UserCreate, UserResponse, TokenResponse, UserProfile, RefreshRequest, UpdatePasswordRequest, ResetPasswordRequest, ForgotPasswordRequest
 
 router = APIRouter(prefix='/api/v1/auth', tags=["Authentication"])
 
@@ -72,7 +73,7 @@ def get_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/update-password", status_code=status.HTTP_200_OK)
-async def reset_password(data: UpdatePasswordRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def update_password(data: UpdatePasswordRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not verify_password(data.old_password.get_secret_value(), str(current_user.password)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -80,4 +81,23 @@ async def reset_password(data: UpdatePasswordRequest, current_user: User = Depen
         )
     current_user.password = hash_password(data.new_password.get_secret_value())  # type: ignore[assignment]
     db.commit()
-    return {"detail": "Password updated successfully"}    
+    return {"detail": "Password updated successfully"}
+
+@router.post('/forgot-password', status_code=status.HTTP_202_ACCEPTED)
+async def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if user:
+        reset_token = create_reset_token(user_id=str(user.id))
+        await send_reset_email(str(user.email), reset_token)
+    return {"message": "If the email exists, a reset link has been sent to it"}
+
+
+@router.post('/reset-password', status_code=status.HTTP_200_OK)
+async def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user_id = decode_reset_token(data.token)
+    user = db.query(User).filter(User.id == str(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
+    user.password = hash_password(data.new_password.get_secret_value())  # type: ignore[assignment]
+    db.commit()
+    return {"message": "Password has been reset successfully"}

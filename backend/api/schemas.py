@@ -82,3 +82,10 @@ class UserProfile(BaseModel):
 class UpdatePasswordRequest(BaseModel):
     old_password: SecretStr;
     new_password: SecretStr = Field(..., min_length=8);
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr;
+
+class ResetPasswordRequest(BaseModel):
+    token: str;
+    new_password: SecretStr = Field(..., min_length=8);

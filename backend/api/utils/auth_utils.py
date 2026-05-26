@@ -1,4 +1,6 @@
 import os
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -15,6 +17,12 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM  = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRY_MINUTES  = float(os.getenv("ACCESS_TOKEN_EXPIRY_MINUTES", "60"))
 REFRESH_TOKEN_EXPIRY_DAYS    = float(os.getenv("REFRESH_TOKEN_EXPIRY_DAYS", "7"))
+RESET_TOKEN_EXPIRY_MINUTES   = float(os.getenv("RESET_TOKEN_EXPIRY_MINUTES", "15"))
+SMTP_HOST    = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT    = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER    = os.getenv("SMTP_USER", "")
+SMTP_PASS    = os.getenv("SMTP_PASS", "")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
 def hash_password(password: str) -> str:
@@ -77,3 +85,42 @@ def decode_access_token(token: str) -> UUID:
 
 def decode_refresh_token(token: str) -> UUID:
     return _decode_token(token, "refresh")
+
+
+def create_reset_token(user_id: str) -> str:
+    """Short-lived 15-minute token for unauthenticated password reset."""
+    return _create_token(UUID(str(user_id)), timedelta(minutes=RESET_TOKEN_EXPIRY_MINUTES), "reset")
+
+
+def decode_reset_token(token: str) -> UUID:
+    return _decode_token(token, "reset")
+
+
+async def send_reset_email(email: str, reset_token: str) -> None:
+    """
+    Sends a password reset link via SMTP.
+    Fails silently — the route always returns 202 regardless to prevent
+    user enumeration attacks.
+    """
+    if not SMTP_USER or not SMTP_PASS:
+        return
+
+    reset_url = f"{FRONTEND_URL}/reset-password?token={reset_token}"
+    body = (
+        f"You requested a password reset for your PhishShield account.\n\n"
+        f"Click the link below to reset your password (expires in {int(RESET_TOKEN_EXPIRY_MINUTES)} minutes):\n"
+        f"{reset_url}\n\n"
+        f"If you did not request this, ignore this email."
+    )
+    msg = MIMEText(body)
+    msg["Subject"] = "PhishShield — Password Reset"
+    msg["From"]    = SMTP_USER
+    msg["To"]      = email
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, email, msg.as_string())
+    except Exception:
+        pass  # Fail silently — never leak whether an email exists
