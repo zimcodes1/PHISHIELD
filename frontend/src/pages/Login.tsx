@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EyeIcon, EyeOffIcon, LogoIcon } from "../components/CustomIcons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Set page title
+  useEffect(()=>{
+    document.title = 'Phishield | Login to Account'
+  },[])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

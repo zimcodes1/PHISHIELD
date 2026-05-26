@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckIcon, EyeIcon, EyeOffIcon, LockIcon, LogoIcon, MailIcon, UserIcon } from "../components/CustomIcons";
 
 export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // Set page title dynamically
+  useEffect(()=>{
+    document.title = "Phishield | Create Account"
+  }, [])
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -19,7 +24,6 @@ export default function SignupPage() {
     e.preventDefault();
     // TODO: wire up auth
   };
-
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
 
