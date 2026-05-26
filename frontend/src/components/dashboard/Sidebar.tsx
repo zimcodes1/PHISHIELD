@@ -80,11 +80,16 @@ export default function Sidebar() {
 							}
               max-sm:overflow-hidden max-sm:inline-grid sm:block`}
 									>
-										<span className="text-sm font-medium overflow-hidden whitespace-nowrap">
+										<span className="hidden max-sm:block text-sm font-medium overflow-hidden whitespace-nowrap">
 											{label}
 										</span>
 									</div>
 								)}
+								{!collapsed && (
+                  <span className="max-sm:hidden text-sm font-medium overflow-hidden whitespace-nowrap">
+									{label}
+								</span>
+                )}
 							</>
 						)}
 					</NavLink>

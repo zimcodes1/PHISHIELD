@@ -5,7 +5,7 @@ import { LockIcon } from "../components/CustomIcons";
 
 // TODO: replace with real auth context / API data
 const MOCK_USER = {
-  fullName: "Azimeh Okafor",
+  fullName: "Azimeh Obadiah",
   email: "azimeh@example.com",
 };
 
