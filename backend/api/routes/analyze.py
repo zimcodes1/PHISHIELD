@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from api.dependencies import get_current_user, get_db
-from api.schemas import URLRequest, EmailRequest, AnalysisResponse
+from api.schemas import URLRequest, EmailRequest, AnalysisResponse, HistoryResponse
 from database.models import User
 from detection.pipeline import run_url_pipeline, run_email_pipeline
 from database.models import Scan
 from sqlalchemy.orm import Session
+from fastapi import status
 
 router = APIRouter(prefix='/api/v1/analyze', tags=["Analyser"])
 
@@ -39,3 +40,26 @@ async def analyze_email(request: EmailRequest, current_user: User = Depends(get_
         return await run_email_pipeline(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get('/history', response_model=HistoryResponse, status_code=status.HTTP_200_OK)
+async def get_analysis_history(
+    page: int = 1,
+    page_size: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Calculate offset for pagination
+    offset = (page - 1) * page_size
+    
+    # Query scans for the current user with pagination
+    scans = db.query(Scan).filter(Scan.user_id == current_user.id).offset(offset).limit(page_size).all()
+    
+    # Get total count of scans for the user
+    total_scans = db.query(Scan).filter(Scan.user_id == current_user.id).count()
+    
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total_scans": total_scans,
+        "scans": scans
+    }

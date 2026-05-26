@@ -89,3 +89,20 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str;
     new_password: SecretStr = Field(..., min_length=8);
+
+class ScanSummary(BaseModel):
+    id: UUID;
+    scan_type: str;
+    input_value: str;
+    risk_score: int;
+    verdict: Verdict;
+    top_reasons: List[str];
+    timestamp: datetime;
+    class Config:
+        from_attributes = True
+
+class HistoryResponse(BaseModel):
+    page: int;
+    page_size: int;
+    total_scans: int;
+    scans: List[ScanSummary];
