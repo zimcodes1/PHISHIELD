@@ -78,7 +78,7 @@ export default function HistoryPage() {
           { label: "Total Scans", value: stats.total, icon: "bx-scan", color: "text-brand-500" },
           { label: "Phishing Blocked", value: stats.phishing, icon: "bx-shield-x", color: "text-danger" },
           { label: "Suspicious", value: stats.suspicious, icon: "bx-error", color: "text-caution" },
-          { label: "Clean", value: stats.clean, icon: "bx-shield-check", color: "text-safe" },
+          { label: "Clean", value: stats.clean, icon: "bx-check-shield", color: "text-safe" },
         ].map(({ label, value, icon, color }) => (
           <div key={label} className="bg-canvas border border-outline rounded-2xl px-5 py-4 shadow-sm">
             <i className={`bx ${icon} text-2xl ${color}`} />
@@ -104,7 +104,7 @@ export default function HistoryPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-canvas border border-outline rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-canvas border border-outline rounded-2xl shadow-sm overflow-hidden max-sm:overflow-scroll max-sm:mb-10">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-outline bg-subtle text-ink-muted text-xs uppercase tracking-wide">

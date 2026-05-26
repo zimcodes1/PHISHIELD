@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ScanForm from "../components/dashboard/ScanForm";
 import ScoreGauge from "../components/dashboard/ScoreGauge";
 import VerdictBadge from "../components/dashboard/VerdictBadge";
@@ -35,6 +35,12 @@ export default function AnalyzerPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [feedbackSent, setFeedbackSent] = useState(false);
+
+  // Set page title
+  useEffect(()=>{
+    document.title = 'PhishShield | Analyze URL or Email'
+  }, [])
+
 
   const handleSubmit = async () => {
     setLoading(true);

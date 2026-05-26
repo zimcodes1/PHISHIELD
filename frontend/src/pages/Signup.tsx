@@ -8,7 +8,7 @@ export default function SignupPage() {
 
   // Set page title dynamically
   useEffect(()=>{
-    document.title = "Phishield | Create Account"
+    document.title = "PhishShield | Create Account"
   }, [])
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>

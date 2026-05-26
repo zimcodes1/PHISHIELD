@@ -8,7 +8,7 @@ export default function LoginPage() {
 
   // Set page title
   useEffect(()=>{
-    document.title = 'Phishield | Login to Account'
+    document.title = 'PhishShield | Login to Account'
   },[])
 
   const handleSubmit = (e: React.FormEvent) => {
