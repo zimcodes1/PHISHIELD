@@ -24,7 +24,7 @@ export default function Sidebar() {
         transition-all duration-300 ease-in-out shrink-0
         ${collapsed ? "w-16" : "w-56"} max-sm:w-9/10 max-sm:h-15
         max-sm:flex-row max-sm:fixed max-sm:bottom-2 max-sm:top-auto
-        max-sm:rounded-3xl max-sm:ml-[5%]
+        max-sm:rounded-3xl max-sm:ml-[5%] max-sm:z-50
       `}
 		>
 			{/* Logo + toggle */}
