@@ -30,10 +30,18 @@ class UserResponse(BaseModel):
     email: EmailStr;
     fullname: str;
     created_at: datetime;
+    class Config:
+        from_attributes = True
 
 class TokenResponse(BaseModel):
     access_token: str;
-    token_type:str = "bearer";
+    refresh_token: str;
+    token_type: str = "bearer";
+    class Config:
+        from_attributes = True
+
+class RefreshRequest(BaseModel):
+    refresh_token: str;
 
 class URLRequest(BaseModel):
     url: str;
@@ -43,6 +51,8 @@ class EmailRequest(BaseModel):
     body: str;
     sender: EmailStr;
     raw_headers: Optional[str] = None;
+    class Config:
+        from_attributes = True
 
 class LayerResult(BaseModel):
     name: str;
@@ -58,6 +68,41 @@ class AnalysisResponse(BaseModel):
     top_reasons: List[str];
     layers_list: List[LayerResult];
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    class Config:
+        from_attributes = True
 
-class HomeResponse(BaseModel):
-    message:str;
+class UserProfile(BaseModel):
+    id: UUID;
+    email: EmailStr;
+    fullname: str;
+    created_at: datetime;
+    class Config:
+        from_attributes = True
+
+class UpdatePasswordRequest(BaseModel):
+    old_password: SecretStr;
+    new_password: SecretStr = Field(..., min_length=8);
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr;
+
+class ResetPasswordRequest(BaseModel):
+    token: str;
+    new_password: SecretStr = Field(..., min_length=8);
+
+class ScanSummary(BaseModel):
+    id: UUID;
+    scan_type: str;
+    input_value: str;
+    risk_score: int;
+    verdict: Verdict;
+    top_reasons: List[str];
+    timestamp: datetime;
+    class Config:
+        from_attributes = True
+
+class HistoryResponse(BaseModel):
+    page: int;
+    page_size: int;
+    total_scans: int;
+    scans: List[ScanSummary];
