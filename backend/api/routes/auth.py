@@ -9,7 +9,7 @@ from api.utils.auth_utils import (
     hash_password, verify_password,
     create_access_token, create_refresh_token, decode_refresh_token,
 )
-from api.schemas import UserCreate, UserResponse, TokenResponse, UserProfile, RefreshRequest
+from api.schemas import UserCreate, UserResponse, TokenResponse, UserProfile, RefreshRequest, UpdatePasswordRequest
 
 router = APIRouter(prefix='/api/v1/auth', tags=["Authentication"])
 
@@ -70,3 +70,14 @@ def refresh_tokens(body: RefreshRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserProfile)
 def get_profile(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.post("/update-password", status_code=status.HTTP_200_OK)
+async def reset_password(data: UpdatePasswordRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not verify_password(data.old_password.get_secret_value(), str(current_user.password)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+    current_user.password = hash_password(data.new_password.get_secret_value())  # type: ignore[assignment]
+    db.commit()
+    return {"detail": "Password updated successfully"}    

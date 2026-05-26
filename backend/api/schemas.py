@@ -60,8 +60,6 @@ class LayerResult(BaseModel):
     reasons: List[str];
     weight: float;
     sub_checks: Optional[List["LayerResult"]] = None;
-    class Config:
-        from_attributes = True
 
 class AnalysisResponse(BaseModel):
     scan_id: UUID;
@@ -80,3 +78,7 @@ class UserProfile(BaseModel):
     created_at: datetime;
     class Config:
         from_attributes = True
+
+class UpdatePasswordRequest(BaseModel):
+    old_password: SecretStr;
+    new_password: SecretStr = Field(..., min_length=8);
