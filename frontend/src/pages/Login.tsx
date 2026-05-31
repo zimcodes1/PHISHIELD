@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { EyeIcon, EyeOffIcon, LogoIcon } from "../components/CustomIcons";
+import { useAuth } from "../context/useAuth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,9 +12,12 @@ export default function LoginPage() {
     document.title = 'PhishShield | Login to Account'
   },[])
 
+  const { login } = useAuth();
+
+  //Form submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: wire up auth
+    login(email, password);
   };
 
   return (
@@ -91,7 +95,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right column: Branding ── */}
-      <div className="flex-1 hidden lg:flex flex-col items-center justify-center bg-gradient-to-br from-brand-400 to-brand-600 px-12 py-16 text-white">
+      <div className="flex-1 hidden lg:flex flex-col items-center justify-center bg-linear-to-br from-brand-400 to-brand-600 px-12 py-16 text-white">
         <LogoIcon className="w-20 h-20 mb-6 opacity-90" />
         <h1 className="text-4xl font-extrabold mb-3 tracking-tight">PhishShield</h1>
         <p className="text-brand-100 text-lg text-center max-w-xs mb-10">
