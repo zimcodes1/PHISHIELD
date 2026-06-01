@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useEffect, useState } from "react";
 import type { User } from "../api/types";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +7,7 @@ import { getUserProfile, loginUser, signUpUser } from "../api/authService";
 type UserContextType = {
     user: User | null;
     access_token: string | null;
+    auth_loading: boolean;
     register: (email:string, fullname:string, password:string) => void;
     login: (email:string, password:string) => void;
     logout: ()=>void;
@@ -18,26 +20,33 @@ const UserContext =  createContext<UserContextType>({} as UserContextType)
 
 export const UserProvider = ({children}:Props)=>{
     const navigate = useNavigate()
-    const [access_token, setAccessToken] = useState<string | null>(null)
-    const [user, setUser] = useState<User | null>(null)
+    const [access_token, setAccessToken] = useState<string | null>(() => localStorage.getItem('access_token'))
+    const [user, setUser] = useState<User | null>(() => {
+        const storedUser = localStorage.getItem('user')
+        return storedUser ? JSON.parse(storedUser) as User : null
+    })
+    const [auth_loading, setAuthLoading] = useState(() => Boolean(localStorage.getItem('access_token')))
 
     useEffect(() => {
         const storedToken = localStorage.getItem('access_token')
-        if (storedToken) {
-            setAccessToken(storedToken)
-            getUserProfile(storedToken)
-                .then((res) => {
-                    setUser(res)
-                    localStorage.setItem('user', JSON.stringify(res))
-                })
-                .catch(() => {
-                    // Token expired or invalid — clear everything
-                    localStorage.removeItem('access_token')
-                    localStorage.removeItem('user')
-                    navigate('/login')
-                })
+        if (!storedToken) {
+            return
         }
-    }, [])
+
+        getUserProfile(storedToken)
+            .then((res) => {
+                setUser(res)
+                localStorage.setItem('user', JSON.stringify(res))
+            })
+            .catch(() => {
+                localStorage.removeItem('access_token')
+                localStorage.removeItem('user')
+                setAccessToken(null)
+                setUser(null)
+                navigate('/login')
+            })
+            .finally(() => setAuthLoading(false))
+    }, [navigate])
     
     const register = async (email: string, fullname: string, password: string) => {
         // signUpUser signature is (fullname, email, password) — map correctly
@@ -49,7 +58,7 @@ export const UserProvider = ({children}:Props)=>{
     }
 
     const login = async (email:string, password:string)=>{
-        await loginUser(email=email, password=password).then((res)=>{
+        await loginUser(email, password).then((res)=>{
             if (res) {
                 localStorage.setItem('access_token', res.access_token)
                 setAccessToken(res.access_token)
@@ -80,7 +89,7 @@ export const UserProvider = ({children}:Props)=>{
     }
 
     return(
-        <UserContext.Provider value={{ login, logout, register, getUser, user, access_token }}>
+        <UserContext.Provider value={{ login, logout, register, getUser, user, access_token, auth_loading }}>
             {children}
         </UserContext.Provider>
     )

@@ -58,7 +58,7 @@ class Scan(Base):
     feedback = relationship("Feedback", back_populates="scan", uselist=False)
 
 class Feedback(Base):
-    __tablename__ = 'feedback',
+    __tablename__ = 'feedback'
     id = Column(String, primary_key=True, default=generate_uuid, nullable=False, index=True)
     scan_id = Column(String, ForeignKey('scans.id'), nullable=False, index=True)
     user_id = Column(String, ForeignKey('users.id'), nullable=False, index=True)
@@ -67,4 +67,3 @@ class Feedback(Base):
     created_at =  Column(DateTime, default=datetime.datetime.utcnow)
     scan = relationship('Scan', back_populates='feedback')
     user = relationship('User', back_populates='feedback')
-

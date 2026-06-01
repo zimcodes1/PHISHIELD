@@ -97,6 +97,7 @@ class ScanSummary(BaseModel):
     risk_score: int;
     verdict: Verdict;
     top_reasons: List[str];
+    layers_list: Optional[List[LayerResult]] = None;
     timestamp: datetime;
     class Config:
         from_attributes = True

@@ -9,6 +9,8 @@ import ReasonCards from "../components/dashboard/ReasonCards";
 import LayerBreakdown from "../components/dashboard/LayerBreakdown";
 import { Alert } from "../components/Toast";
 import axios from "axios";
+import Preloader from "../components/Preloader";
+import { waitForMinimumDuration } from "../utils/minimumDelay";
 
 // Backend returns "Clean" | "Suspicious" | "Phishing" — components expect lowercase
 type NormalisedVerdict = "clean" | "suspicious" | "phishing";
@@ -31,6 +33,7 @@ export default function AnalyzerPage() {
 
   const handleSubmit = async (data: ScanFormData) => {
     if (!access_token) return;
+    const startedAt = Date.now();
     setLoading(true);
     setResult(null);
     setError(null);
@@ -58,6 +61,7 @@ export default function AnalyzerPage() {
       const detail = axios.isAxiosError(err) ? err.response?.data?.detail : null;
       setError(typeof detail === "string" ? detail : "Analysis failed. Please try again.");
     } finally {
+      await waitForMinimumDuration(startedAt);
       setLoading(false);
     }
   };
@@ -80,12 +84,7 @@ export default function AnalyzerPage() {
       {/* Scan form */}
       <div className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
         <ScanForm onSubmit={handleSubmit} loading={loading} />
-        {loading && (
-          <p className="text-sm text-ink-muted flex items-center gap-2">
-            <i className="bx bx-loader-alt animate-spin text-brand-500" />
-            Analysis in progress — this usually takes 2–4 seconds…
-          </p>
-        )}
+        {loading && <Preloader message="Analysis in progress..." />}
         {error && <Alert variant="error" message={error} onDismiss={() => setError(null)} />}
       </div>
 

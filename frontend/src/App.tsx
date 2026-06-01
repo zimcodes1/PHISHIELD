@@ -8,6 +8,7 @@ import HistoryPage from "./pages/History";
 import SettingsPage from "./pages/Settings";
 import NotFoundPage from "./pages/NotFound";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // UserProvider uses useNavigate, so it must live inside the router.
 // This wrapper renders inside the router tree before any page.
@@ -27,11 +28,16 @@ const router = createBrowserRouter([
       { path: "/signup",          element: <SignupPage /> },
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       {
-        element: <DashboardLayout />,
+        element: <ProtectedRoute />,
         children: [
-          { path: "/",         element: <AnalyzerPage /> },
-          { path: "/history",  element: <HistoryPage /> },
-          { path: "/settings", element: <SettingsPage /> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: "/",         element: <AnalyzerPage /> },
+              { path: "/history",  element: <HistoryPage /> },
+              { path: "/settings", element: <SettingsPage /> },
+            ],
+          },
         ],
       },
       { path: "*", element: <NotFoundPage /> },

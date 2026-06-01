@@ -34,3 +34,21 @@ export type AnalysisResponse = {
     layers_list: LayerResult[];
     timestamp: string;
 }
+
+export type ScanHistoryItem = {
+    id: string;
+    scan_type: "url" | "email_text" | "email_file" | "extension_url";
+    input_value: string;
+    risk_score: number;
+    verdict: "Clean" | "Suspicious" | "Phishing";
+    top_reasons: string[];
+    layers_list?: LayerResult[] | null;
+    timestamp: string;
+}
+
+export type HistoryResponse = {
+    page: number;
+    page_size: number;
+    total_scans: number;
+    scans: ScanHistoryItem[];
+}
