@@ -24,7 +24,7 @@ app.add_middleware(
     allow_origins=cors_allowed_origins,
     allow_credentials=True,
     allow_methods=['*'],
-    allow_headers=["Content-Type"]
+    allow_headers=["*"]
 )
 
 #Register public auth routes

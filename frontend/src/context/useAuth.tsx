@@ -21,12 +21,21 @@ export const UserProvider = ({children}:Props)=>{
     const [access_token, setAccessToken] = useState<string | null>(null)
     const [user, setUser] = useState<User | null>(null)
 
-    useEffect(()=>{
-        const user = localStorage.getItem('user')
-        const access_token = localStorage.getItem('access_token')
-        if (user && access_token){
-            setAccessToken(access_token)
-            setUser(JSON.parse(user))
+    useEffect(() => {
+        const storedToken = localStorage.getItem('access_token')
+        if (storedToken) {
+            setAccessToken(storedToken)
+            getUserProfile(storedToken)
+                .then((res) => {
+                    setUser(res)
+                    localStorage.setItem('user', JSON.stringify(res))
+                })
+                .catch(() => {
+                    // Token expired or invalid — clear everything
+                    localStorage.removeItem('access_token')
+                    localStorage.removeItem('user')
+                    navigate('/login')
+                })
         }
     }, [])
     

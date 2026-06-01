@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { User, LoginResponse } from "./types"
+import type { User, LoginResponse, UserStats } from "./types"
 const API_URL = 'http://localhost:8000/api/v1'
 
 export const loginUser = async function (email: string, password: string) {
@@ -26,14 +26,29 @@ export const signUpUser = async function (fullname: string, email: string, passw
     return response.data
 }
 
-export const getUserProfile = async function (access_token:string) {
-    try{
+export const getUserProfile = async function (access_token: string) {
+    try {
         const response = await axios.get<User>(`${API_URL}/auth/me`, {
-            headers:{'Authorization': `Bearer ${access_token}`}
+            headers: { 'Authorization': `Bearer ${access_token}` }
         })
         return response.data
-    }catch(err){
-        let error = new Error(`Couldn't get user profile: ${err}`)
-        throw error
+    } catch(err) {
+        throw err
     }
+}
+
+export const updatePassword = async function (old_password: string, new_password: string, access_token: string) {
+    const response = await axios.post(
+        `${API_URL}/auth/update-password`,
+        { old_password, new_password },
+        { headers: { 'Authorization': `Bearer ${access_token}` } }
+    )
+    return response.data
+}
+
+export const getUserStats = async function (access_token: string) {
+    const response = await axios.get<UserStats>(`${API_URL}/history/stats`, {
+        headers: { 'Authorization': `Bearer ${access_token}` }
+    })
+    return response.data
 }

@@ -1,58 +1,78 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { EyeIcon, EyeOffIcon } from "../components/CustomIcons";
-import { LockIcon } from "../components/CustomIcons";
-
-// TODO: replace with real auth context / API data
-const MOCK_USER = {
-  fullName: "Azimeh Obadiah",
-  email: "azimeh@example.com",
-};
-
-const MOCK_STATS = {
-  total: 47,
-  safe: 28,
-  suspicious: 11,
-  phishing: 8,
-};
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/useAuth";
+import { getUserStats, updatePassword } from "../api/authService";
+import type { UserStats } from "../api/types";
+import { EyeIcon, EyeOffIcon, LockIcon } from "../components/CustomIcons";
+import { Alert } from "../components/Toast";
+import axios from "axios";
 
 export default function SettingsPage() {
-  const navigate = useNavigate();
+  const { user, logout, access_token } = useAuth();
+
+  // ── Password form ─────────────────────────────────────────────────────────
   const [passwordForm, setPasswordForm] = useState({ current: "", next: "", confirm: "" });
   const [show, setShow] = useState({ current: false, next: false, confirm: false });
-  const [pwStatus, setPwStatus] = useState<"idle" | "success" | "error">("idle");
+  const [pwStatus, setPwStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [pwError, setPwError] = useState<string | null>(null);
+
+  // ── Scan stats ────────────────────────────────────────────────────────────
+  const [stats, setStats] = useState<UserStats | null>(null);
+
+  // ── Logout confirm ────────────────────────────────────────────────────────
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const initial = MOCK_USER.fullName.trim().charAt(0).toUpperCase();
+  useEffect(() => {
+    document.title = "PhishShield | Settings";
+    if (access_token) {
+      getUserStats(access_token)
+        .then(setStats)
+        .catch(() => {}); // stats are non-critical, fail silently
+    }
+  }, [access_token]);
+
+  const initial = user?.fullname?.trim().charAt(0).toUpperCase() ?? "?";
 
   const setField = (field: keyof typeof passwordForm) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPwError(null);
+      setPwStatus("idle");
       setPasswordForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   const toggleShow = (field: keyof typeof show) =>
     setShow((prev) => ({ ...prev, [field]: !prev[field] }));
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordForm.next !== passwordForm.confirm) { setPwStatus("error"); return; }
-    // TODO: call PATCH /auth/password
-    setPwStatus("success");
-    setPasswordForm({ current: "", next: "", confirm: "" });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    if (passwordForm.next !== passwordForm.confirm) {
+      setPwError("New passwords do not match.");
+      return;
+    }
+    if (passwordForm.next.length < 8) {
+      setPwError("New password must be at least 8 characters.");
+      return;
+    }
+    setPwStatus("loading");
+    setPwError(null);
+    try {
+      await updatePassword(passwordForm.current, passwordForm.next, access_token!);
+      setPwStatus("success");
+      setPasswordForm({ current: "", next: "", confirm: "" });
+    } catch (err) {
+      const detail = axios.isAxiosError(err) ? err.response?.data?.detail : null;
+      setPwError(typeof detail === "string" ? detail : "Failed to update password. Please try again.");
+      setPwStatus("error");
+    }
   };
 
   const inputClass =
     "w-full px-4 py-3 rounded-xl border border-outline bg-subtle text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition text-sm";
 
   const statCards = [
-    { label: "Total Scans",      value: MOCK_STATS.total,      icon: "bx-scan",         color: "text-brand-500", bg: "bg-brand-50" },
-    { label: "Clean",            value: MOCK_STATS.safe,       icon: "bx-check-shield", color: "text-safe",      bg: "bg-safe/10" },
-    { label: "Suspicious",       value: MOCK_STATS.suspicious, icon: "bx-error",        color: "text-caution",   bg: "bg-caution/10" },
-    { label: "Phishing Blocked", value: MOCK_STATS.phishing,   icon: "bx-shield-x",     color: "text-danger",    bg: "bg-danger/10" },
+    { label: "Total Scans",      value: stats?.total,      icon: "bx-scan",         color: "text-brand-500", bg: "bg-brand-50"    },
+    { label: "Clean",            value: stats?.safe,       icon: "bx-shield-check", color: "text-safe",      bg: "bg-safe/10"     },
+    { label: "Suspicious",       value: stats?.suspicious, icon: "bx-error",        color: "text-caution",   bg: "bg-caution/10"  },
+    { label: "Phishing Blocked", value: stats?.phishing,   icon: "bx-shield-x",     color: "text-danger",    bg: "bg-danger/10"   },
   ];
 
   return (
@@ -63,21 +83,22 @@ export default function SettingsPage() {
         <p className="text-ink-muted text-sm mt-1">Manage your account and preferences.</p>
       </div>
 
-      {/* ── Profile card ── */}
+      {/* ── Profile ── */}
       <section className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-5">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Profile</h2>
-
         <div className="flex items-center gap-5">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-md shadow-brand-200">
+          <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-md shadow-brand-200">
             <span className="text-2xl font-bold text-white">{initial}</span>
           </div>
-
           <div className="space-y-1 min-w-0">
-            <p className="text-base font-semibold text-ink truncate">{MOCK_USER.fullName}</p>
+            <p className="text-base font-semibold text-ink truncate">{user?.fullname ?? "—"}</p>
             <p className="text-sm text-ink-muted flex items-center gap-1.5 truncate">
               <i className="bx bx-envelope text-brand-400" />
-              {MOCK_USER.email}
+              {user?.email ?? "—"}
+            </p>
+            <p className="text-xs text-ink-muted flex items-center gap-1.5">
+              <i className="bx bx-calendar text-brand-300" />
+              Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" }) : "—"}
             </p>
           </div>
         </div>
@@ -90,18 +111,19 @@ export default function SettingsPage() {
           {statCards.map(({ label, value, icon, color, bg }) => (
             <div key={label} className={`${bg} rounded-xl px-4 py-4 flex flex-col gap-2`}>
               <i className={`bx ${icon} text-2xl ${color}`} />
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              <p className={`text-2xl font-bold ${color}`}>
+                {value ?? <span className="text-ink-muted text-base">—</span>}
+              </p>
               <p className="text-xs text-ink-muted leading-tight">{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Reset password ── */}
+      {/* ── Update password ── */}
       <section className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Reset Password</h2>
-
-        <form onSubmit={handleResetPassword} className="space-y-3">
+        <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Update Password</h2>
+        <form onSubmit={handleUpdatePassword} className="space-y-3" noValidate>
           {(["current", "next", "confirm"] as const).map((field) => {
             const labels = { current: "Current password", next: "New password", confirm: "Confirm new password" };
             return (
@@ -109,47 +131,43 @@ export default function SettingsPage() {
                 <input
                   type={show[field] ? "text" : "password"}
                   required
+                  autoComplete={field === "current" ? "current-password" : "new-password"}
                   value={passwordForm[field]}
                   onChange={setField(field)}
                   placeholder={labels[field]}
                   className={`${inputClass} pr-12`}
                 />
-                <button
-                  type="button"
-                  onClick={() => toggleShow(field)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink"
-                >
+                <button type="button" onClick={() => toggleShow(field)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink cursor-pointer">
                   {show[field] ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
             );
           })}
 
-          {pwStatus === "error" && (
-            <p className="text-sm text-danger flex items-center gap-1.5">
-              <i className="bx bx-x-circle" /> New passwords do not match.
-            </p>
-          )}
-          {pwStatus === "success" && (
-            <p className="text-sm text-safe flex items-center gap-1.5">
-              <i className="bx bx-check-circle" /> Password updated successfully.
-            </p>
-          )}
+          {pwError && <Alert variant="error" message={pwError} onDismiss={() => setPwError(null)} />}
+          {pwStatus === "success" && <Alert variant="success" message="Password updated successfully." />}
 
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-sm font-semibold transition shadow-sm cursor-pointer"
+            disabled={pwStatus === "loading"}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-sm font-semibold transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
-            <span className="flex gap-1 justify-between items-center"><LockIcon></LockIcon>Update password</span>
+            {pwStatus === "loading" ? (
+              <><i className="bx bx-loader-alt animate-spin text-base" /> Updating…</>
+            ) : (
+              <><LockIcon /> Update password</>
+            )}
           </button>
         </form>
       </section>
 
-      {/* ── Logout ── */}
+      {/* ── Session / Logout ── */}
       <section className="max-sm:mb-10 bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Session</h2>
-        <p className="text-sm text-ink-muted">Signing out will clear your session. You'll need to log in again to access your dashboard.</p>
-
+        <p className="text-sm text-ink-muted">
+          Signing out will clear your session. You'll need to log in again to access your dashboard.
+        </p>
         {!showLogoutConfirm ? (
           <button
             onClick={() => setShowLogoutConfirm(true)}
@@ -158,10 +176,10 @@ export default function SettingsPage() {
             <i className="bx bx-log-out text-lg" /> Sign out
           </button>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <p className="text-sm text-ink">Are you sure?</p>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="px-4 py-2 rounded-xl bg-danger hover:bg-red-600 text-white text-sm font-semibold transition cursor-pointer"
             >
               Yes, sign out
