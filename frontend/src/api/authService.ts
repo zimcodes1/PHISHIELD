@@ -37,19 +37,37 @@ export const updatePassword = async function (old_password: string, new_password
     return response.data
 }
 
-export const getUserStats = async function (access_token: string) {
-    const response = await axios.get<UserStats>(`${API_URL}/history/stats`, {
-        headers: { 'Authorization': `Bearer ${access_token}` }
-    })
-    return response.data
-}
-
 export const getAnalysisHistory = async function (access_token: string, page = 1, page_size = 100) {
     const response = await axios.get<HistoryResponse>(`${API_URL}/analyze/history`, {
         params: { page, page_size },
         headers: { 'Authorization': `Bearer ${access_token}` }
     })
     return response.data
+}
+
+export const getAllAnalysisHistory = async function (access_token: string) {
+    const scans: HistoryResponse["scans"] = []
+    let page = 1
+    let total = 0
+
+    do {
+        const response = await getAnalysisHistory(access_token, page, 100)
+        scans.push(...response.scans)
+        total = response.total_scans
+        page += 1
+    } while (scans.length < total)
+
+    return scans
+}
+
+export const getUserStats = async function (access_token: string): Promise<UserStats> {
+    const scans = await getAllAnalysisHistory(access_token)
+    return {
+        total: scans.length,
+        safe: scans.filter((scan) => scan.verdict === "Clean").length,
+        suspicious: scans.filter((scan) => scan.verdict === "Suspicious").length,
+        phishing: scans.filter((scan) => scan.verdict === "Phishing").length,
+    }
 }
 
 export const analyzeURL = async function (url: string, access_token: string) {

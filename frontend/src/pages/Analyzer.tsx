@@ -11,6 +11,7 @@ import { Alert } from "../components/Toast";
 import axios from "axios";
 import Preloader from "../components/Preloader";
 import { waitForMinimumDuration } from "../utils/minimumDelay";
+import ProfileLink from "../components/dashboard/ProfileLink";
 
 // Backend returns "Clean" | "Suspicious" | "Phishing" — components expect lowercase
 type NormalisedVerdict = "clean" | "suspicious" | "phishing";
@@ -74,11 +75,14 @@ export default function AnalyzerPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
 
-      <div>
-        <h1 className="text-2xl font-bold text-ink">Scan for Threats</h1>
-        <p className="text-ink-muted text-sm mt-1">
-          Paste a URL or email content to run a multi-layer phishing analysis.
-        </p>
+      <div className="flex items-start justify-between gap-4 max-sm:relative">
+        <div className="max-sm:mt-5">
+          <h1 className="text-2xl font-bold text-ink">Scan for Threats</h1>
+          <p className="text-ink-muted text-sm mt-1">
+            Paste a URL or email content to run a multi-layer phishing analysis.
+          </p>
+        </div>
+        <ProfileLink />
       </div>
 
       {/* Scan form */}

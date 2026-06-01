@@ -11,6 +11,7 @@ import {
 } from "../components/CustomIcons";
 import { Alert } from "../components/Toast";
 import { useAuth } from "../context/useAuth";
+import { getPasswordRules, validatePasswordRules } from "../utils/passwordRules";
 
 // ── Validation helpers ────────────────────────────────────────────────────────
 
@@ -26,15 +27,7 @@ function validateForm(name: string, email: string, password: string, confirm: st
 		return "Full name is too long.";
 	if (!EMAIL_RE.test(sanitize(email)))
 		return "Please enter a valid email address.";
-	if (password.length < 8)
-		return "Password must be at least 8 characters.";
-	if (!/\d/.test(password))
-		return "Password must contain at least one number.";
-	if (!/[A-Za-z]/.test(password))
-		return "Password must contain at least one letter.";
-	if (password !== confirm)
-		return "Passwords do not match.";
-	return null;
+	return validatePasswordRules(password, confirm);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -57,12 +50,7 @@ export default function SignupPage() {
 			setForm((prev) => ({ ...prev, [field]: e.target.value }));
 		};
 
-	const passwordRules = [
-		{ label: "At least 8 characters",  met: form.password.length >= 8 },
-		{ label: "Contains a number",       met: /\d/.test(form.password) },
-		{ label: "Contains a letter",       met: /[A-Za-z]/.test(form.password) },
-		{ label: "Passwords match",         met: form.password.length > 0 && form.password === form.confirm },
-	];
+	const passwordRules = getPasswordRules(form.password, form.confirm);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

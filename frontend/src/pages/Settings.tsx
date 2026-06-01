@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { getUserStats, updatePassword } from "../api/authService";
 import type { UserStats } from "../api/types";
-import { EyeIcon, EyeOffIcon, LockIcon } from "../components/CustomIcons";
+import { CheckIcon, EyeIcon, EyeOffIcon, LockIcon } from "../components/CustomIcons";
 import { Alert } from "../components/Toast";
 import axios from "axios";
+import { getPasswordRules, validatePasswordRules } from "../utils/passwordRules";
 
 export default function SettingsPage() {
   const { user, logout, access_token } = useAuth();
@@ -42,16 +43,17 @@ export default function SettingsPage() {
   const toggleShow = (field: keyof typeof show) =>
     setShow((prev) => ({ ...prev, [field]: !prev[field] }));
 
+  const passwordRules = getPasswordRules(passwordForm.next, passwordForm.confirm);
+
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordForm.next !== passwordForm.confirm) {
-      setPwError("New passwords do not match.");
+
+    const validationError = validatePasswordRules(passwordForm.next, passwordForm.confirm);
+    if (validationError) {
+      setPwError(validationError);
       return;
     }
-    if (passwordForm.next.length < 8) {
-      setPwError("New password must be at least 8 characters.");
-      return;
-    }
+
     setPwStatus("loading");
     setPwError(null);
     try {
@@ -70,7 +72,7 @@ export default function SettingsPage() {
 
   const statCards = [
     { label: "Total Scans",      value: stats?.total,      icon: "bx-scan",         color: "text-brand-500", bg: "bg-brand-50"    },
-    { label: "Clean",            value: stats?.safe,       icon: "bx-shield-check", color: "text-safe",      bg: "bg-safe/10"     },
+    { label: "Clean",            value: stats?.safe,       icon: "bx-check-shield", color: "text-safe",      bg: "bg-safe/10"     },
     { label: "Suspicious",       value: stats?.suspicious, icon: "bx-error",        color: "text-caution",   bg: "bg-caution/10"  },
     { label: "Phishing Blocked", value: stats?.phishing,   icon: "bx-shield-x",     color: "text-danger",    bg: "bg-danger/10"   },
   ];
@@ -144,6 +146,19 @@ export default function SettingsPage() {
               </div>
             );
           })}
+
+          {passwordForm.next.length > 0 && (
+            <ul className="space-y-1.5">
+              {passwordRules.map(({ label, met }) => (
+                <li key={label} className={`flex items-center gap-2 text-sm ${met ? "text-safe" : "text-ink-muted"}`}>
+                  <span className={`flex items-center justify-center w-4 h-4 rounded-full shrink-0 ${met ? "bg-safe text-white" : "bg-outline"}`}>
+                    <CheckIcon />
+                  </span>
+                  {label}
+                </li>
+              ))}
+            </ul>
+          )}
 
           {pwError && <Alert variant="error" message={pwError} onDismiss={() => setPwError(null)} />}
           {pwStatus === "success" && <Alert variant="success" message="Password updated successfully." />}

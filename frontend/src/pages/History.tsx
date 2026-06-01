@@ -8,6 +8,7 @@ import { getAnalysisHistory } from "../api/authService";
 import type { ScanHistoryItem } from "../api/types";
 import { useAuth } from "../context/useAuth";
 import { waitForMinimumDuration } from "../utils/minimumDelay";
+import ProfileLink from "../components/dashboard/ProfileLink";
 
 type Verdict = "clean" | "suspicious" | "phishing";
 type ScanType = "url" | "email";
@@ -111,9 +112,12 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-ink">Scan History</h1>
-        <p className="text-ink-muted text-sm mt-1">All your past analyses, most recent first.</p>
+      <div className="flex items-start justify-between gap-4 max-sm:relative">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Scan History</h1>
+          <p className="text-ink-muted text-sm mt-1">All your past analyses, most recent first.</p>
+        </div>
+        <ProfileLink />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
