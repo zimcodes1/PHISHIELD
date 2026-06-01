@@ -37,7 +37,7 @@ try:
             threat_type = matches[0].get("threatType", "THREAT").replace("_", " ").title()
             print(json.dumps({"score": 1.0, "reason": f"URL flagged by Google Safe Browsing: {threat_type}"}))
         else:
-            print(json.dumps({"score": 0.0, "reason": "No Google Safe Browsing match"}))
+            print(json.dumps({"score": None, "reason": "No Google Safe Browsing match"}))
     elif response.status_code in (400, 403):
         print(json.dumps({"score": 0.0, "reason": f"Google Safe Browsing lookup rejected: HTTP {response.status_code}"}))
     else:
@@ -54,13 +54,13 @@ class GoogleSafeBrowsingCheck(UrlSubCheck):
     def __init__(self) -> None:
         self.api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY")
 
-    async def _execute(self, url: str) -> Tuple[float, str]:
+    async def _execute(self, url: str) -> Tuple[float | None, str]:
         if not self.api_key:
             return 0.0, "Google Safe Browsing API key not configured"
 
         return await self._run_lookup(url)
 
-    async def _run_lookup(self, url: str) -> Tuple[float, str]:
+    async def _run_lookup(self, url: str) -> Tuple[float | None, str]:
         proc = await asyncio.create_subprocess_exec(
             sys.executable,
             "-c",
@@ -77,4 +77,9 @@ class GoogleSafeBrowsingCheck(UrlSubCheck):
             raise
 
         data = json.loads(stdout.decode() or "{}")
-        return float(data.get("score", 0.0)), data.get("reason", "Google Safe Browsing lookup failed")
+        score = data.get("score")
+        reason = data.get("reason", "")
+        # score is None when the URL was simply not found in the GSB database
+        if score is None or reason in ("No Google Safe Browsing match",):
+            return self.no_data()
+        return float(score), reason

@@ -23,39 +23,47 @@ async def analyze_url(url: str) -> Tuple[float, list[str], list[LayerResult]]:
 
     Scoring logic:
     - Confirmed GSB/URLhaus hit (1.0) overrides everything.
-    - Otherwise the RF model score acts as a floor because a reputation miss
-      means "not found", not "confirmed safe".
+    - Sub-checks that return None (no record found) are excluded entirely
+      from the weighted average so they don't dilute the score.
+    - The RF model always produces a value and acts as a floor.
     """
     normalized_url = _normalize_url(url)
-    results: list[Tuple[float, str]] = await asyncio.gather(
+    results: list[Tuple[float | None, str]] = await asyncio.gather(
         *[check.run(normalized_url) for check in _SUB_CHECKS]
     )
 
-    rf_score   = results[0][0]
+    rf_score   = results[0][0]  # RF model always returns a value
     gsb_score  = results[1][0]
     haus_score = results[2][0]
 
+    # Confirmed threat — override immediately
     if gsb_score == 1.0 or haus_score == 1.0:
         final_score = 1.0
     else:
-        weighted_sum = sum(
-            score * check.weight
+        # Only include sub-checks that actually returned a score
+        active = [
+            (score, check)
             for (score, _), check in zip(results, _SUB_CHECKS)
-        )
-        total_weight = sum(check.weight for check in _SUB_CHECKS)
-        final_score = min(max(weighted_sum / total_weight, rf_score), 1.0)
+            if score is not None
+        ]
+        weighted_sum = sum(score * check.weight for score, check in active)
+        total_weight = sum(check.weight for _, check in active)
+        base_score = weighted_sum / total_weight if total_weight > 0 else 0.0
+        # RF score acts as a floor — never let reputation misses push below it
+        final_score = min(max(base_score, rf_score or 0.0), 1.0)
 
-    # Rank reasons by sub-check weight, highest first
+    # Collect reasons only from active sub-checks with meaningful scores
     reasons = [
         reason
-        for _, (score, reason), check in sorted(
-            zip(range(len(_SUB_CHECKS)), results, _SUB_CHECKS),
-            key=lambda x: x[2].weight,
+        for (score, reason), check in sorted(
+            zip(results, _SUB_CHECKS),
+            key=lambda x: x[1].weight,
             reverse=True,
         )
-        if reason and score >= 0.3
+        if score is not None and reason and score >= 0.3
     ]
 
+    # Only include sub-checks that returned data in the breakdown
     sub_checks = [
         LayerResult(
             name=check.name,
@@ -64,6 +72,7 @@ async def analyze_url(url: str) -> Tuple[float, list[str], list[LayerResult]]:
             weight=check.weight,
         )
         for (score, reason), check in zip(results, _SUB_CHECKS)
+        if score is not None
     ]
 
     return final_score, reasons, sub_checks

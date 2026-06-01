@@ -17,3 +17,20 @@ export type UserStats = {
     suspicious: number;
     phishing: number;
 }
+
+export type LayerResult = {
+    name: string;
+    score: number;
+    reasons: string[];
+    weight: number;
+    sub_checks?: LayerResult[];
+}
+
+export type AnalysisResponse = {
+    scan_id: string;
+    risk_score: number;
+    verdict: "Clean" | "Suspicious" | "Phishing";
+    top_reasons: string[];
+    layers_list: LayerResult[];
+    timestamp: string;
+}

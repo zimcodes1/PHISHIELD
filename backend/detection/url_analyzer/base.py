@@ -10,11 +10,11 @@ class UrlSubCheck:
     weight: float = 0.0
     timeout_seconds: float = 5.0
 
-    async def run(self, url: str) -> Tuple[float, str]:
+    async def run(self, url: str) -> Tuple[float | None, str]:
         """
         Executes sub-check with global fallback handling.
-        Returns (score, reason) tuple.
-        Ensures external service failures never crash the scanning route.
+        Returns (score, reason) tuple. Score is None when the lookup
+        found no record and the sub-check should be excluded from scoring.
         """
         try:
             return await asyncio.wait_for(self._execute(url), timeout=self.timeout_seconds)
@@ -30,6 +30,10 @@ class UrlSubCheck:
 
     def _fallback_score(self) -> Tuple[float, str]:
         return 0.0, f"{self.name} unavailable"
+
+    def no_data(self) -> Tuple[None, str]:
+        """Sentinel returned when a lookup finds no record — excluded from scoring."""
+        return None, ""
 
 class ReputationAnalysisLayer:
     pass

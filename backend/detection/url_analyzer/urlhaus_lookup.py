@@ -30,7 +30,7 @@ try:
         score = 1.0 if url_status == "online" else 0.5
         print(json.dumps({"score": score, "reason": f"URLhaus: {url_status} - {threat_type}"}))
     elif query_status == "no_results":
-        print(json.dumps({"score": 0.0, "reason": "No URLhaus match"}))
+        print(json.dumps({"score": None, "reason": "No URLhaus match"}))
     else:
         print(json.dumps({"score": 0.0, "reason": f"URLhaus warning: {data.get('error', 'unknown response')}"}))
 except Exception as exc:
@@ -45,7 +45,7 @@ class UrlHausLookup(UrlSubCheck):
     def __init__(self) -> None:
         self.api_key = os.getenv("URLHAUS_API_KEY")
 
-    async def _execute(self, url: str) -> Tuple[float, str]:
+    async def _execute(self, url: str) -> Tuple[float | None, str]:
         proc = await asyncio.create_subprocess_exec(
             sys.executable,
             "-c",
@@ -62,4 +62,8 @@ class UrlHausLookup(UrlSubCheck):
             raise
 
         data = json.loads(stdout.decode() or "{}")
-        return float(data.get("score", 0.0)), data.get("reason", "URLhaus lookup failed")
+        score = data.get("score")
+        reason = data.get("reason", "")
+        if score is None:
+            return self.no_data()
+        return float(score), reason

@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { User, LoginResponse, UserStats } from "./types"
+import type { User, LoginResponse, UserStats, AnalysisResponse } from "./types"
 const API_URL = 'http://localhost:8000/api/v1'
 
 export const loginUser = async function (email: string, password: string) {
@@ -50,5 +50,40 @@ export const getUserStats = async function (access_token: string) {
     const response = await axios.get<UserStats>(`${API_URL}/history/stats`, {
         headers: { 'Authorization': `Bearer ${access_token}` }
     })
+    return response.data
+}
+
+export const analyzeURL = async function (url: string, access_token: string) {
+    const response = await axios.post<AnalysisResponse>(
+        `${API_URL}/analyze/url`,
+        { url },
+        { headers: { 'Authorization': `Bearer ${access_token}` } }
+    )
+    return response.data
+}
+
+export const analyzeEmail = async function (
+    subject: string,
+    body: string,
+    sender: string,
+    raw_headers: string | undefined,
+    access_token: string
+) {
+    const response = await axios.post<AnalysisResponse>(
+        `${API_URL}/analyze/email`,
+        { subject, body, sender, raw_headers: raw_headers || null },
+        { headers: { 'Authorization': `Bearer ${access_token}` } }
+    )
+    return response.data
+}
+
+export const analyzeEML = async function (file: File, access_token: string) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await axios.post<AnalysisResponse>(
+        `${API_URL}/analyze/email/upload`,
+        formData,
+        { headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'multipart/form-data' } }
+    )
     return response.data
 }
