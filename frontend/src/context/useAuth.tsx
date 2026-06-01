@@ -30,13 +30,12 @@ export const UserProvider = ({children}:Props)=>{
         }
     }, [])
     
-    const register = async (email:string, fullname:string, password:string)=>{
-        await signUpUser(email=email, fullname=fullname, password=password).then((res)=>{
-            if (res) {
-                navigate('/login')
-            }
-        }).catch((err)=>{
-            console.log(err)
+    const register = async (email: string, fullname: string, password: string) => {
+        // signUpUser signature is (fullname, email, password) — map correctly
+        await signUpUser(fullname, email, password).then((res) => {
+            if (res) navigate('/login')
+        }).catch((err) => {
+            throw err
         })
     }
 
@@ -48,7 +47,7 @@ export const UserProvider = ({children}:Props)=>{
                 navigate('/')
             }
         }).catch((err)=>{
-            console.log(err)
+            throw err
         })
     }
 

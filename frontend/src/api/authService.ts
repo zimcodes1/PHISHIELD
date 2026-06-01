@@ -14,23 +14,16 @@ export const loginUser = async function (email: string, password: string) {
         return response.data
     }
     catch (err) {
-        let error = new Error(`Login Error: ${err}`)
-        throw error
+        throw err
     }
 }
 
 export const signUpUser = async function (fullname: string, email: string, password: string) {
-    try {
-        const response = await axios.post<User>(
-            `${API_URL}/auth/register`,
-            {fullname:fullname, email:email, password:password}
-        )
-        return response.data
-    }
-    catch(err){
-        let error = new Error(`Signup Error: ${err}`)
-        throw error
-    }
+    const response = await axios.post<User>(
+        `${API_URL}/auth/register`,
+        { fullname, email, password }
+    )
+    return response.data
 }
 
 export const getUserProfile = async function (access_token:string) {
