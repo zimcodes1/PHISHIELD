@@ -14,7 +14,7 @@ Base.metadata.create_all(bind=engine)
 
 
 cors_allowed_origins = [
-    "http://localhost:5173",
+    "*",
 ]
 
 app = FastAPI()
