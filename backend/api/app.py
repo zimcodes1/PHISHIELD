@@ -1,10 +1,9 @@
-from fastapi import FastAPI, Depends, status
+from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
 from database.database import engine, Base, get_db
 from database.models import User
-from .dependencies import get_current_user
 from api.routes.auth import router as auth_router
 from api.routes.analyze import router as analyzer_routes
 
@@ -14,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 
 
 cors_allowed_origins = [
-    "http://localhost:5173",
+    "https://phishield-ai.vercel.app/",
 ]
 
 app = FastAPI()
