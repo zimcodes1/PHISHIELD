@@ -13,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 
 
 cors_allowed_origins = [
-    "https://phishield-ai.vercel.app/",
+    "https://phishield-ai.vercel.app",
 ]
 
 app = FastAPI()
