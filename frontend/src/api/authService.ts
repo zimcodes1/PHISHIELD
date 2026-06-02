@@ -1,6 +1,6 @@
 import axios from "axios"
 import type { User, LoginResponse, UserStats, AnalysisResponse, HistoryResponse } from "./types"
-const API_URL = 'http://localhost:8000/api/v1'
+const API_URL = 'https://phishield-backend.vercel.app/api/v1'
 
 // ── Axios instance ────────────────────────────────────────────────────────────
 // All API calls use this instance so the interceptor applies everywhere.
