@@ -13,18 +13,19 @@ from detection.email_analyzer import analyze_email_rf
 
 # --- Ensemble layer weights (Section 6.4 of phishield-roadmap-v3.md) ---
 # Visual (Layer 4) is excluded here — it runs async post-response via /analyze/visual
+# Adjusted weights after optimization pass: URL weight increased due to multiple sub-checks
 _WEIGHTS = {
-    "url":     0.30,
+    "url":     0.40,
     "email_rf": 0.30,
-    "nlp":     0.35,
+    "nlp":     0.30,
     "headers": 0.20,
 }
 
 
 def _compute_verdict(score: int) -> Verdict:
-    if score >= 70:
+    if score >= 60:
         return Verdict.PHISHING
-    if score >= 40:
+    if score >= 35:
         return Verdict.SUSPICIOUS
     return Verdict.CLEAN
 
@@ -40,10 +41,17 @@ def _build_layer_result(
 def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int, list[str]]:
     """
     Weighted average over whichever layers ran.
-    Excludes skipped layers and redistributes their weight proportionally.
+    Excludes skipped layers (None) and 0-scored layers (unavailable APIs) 
+    and redistributes their weight proportionally.
     Returns (risk_score 0–100, top_3_reasons).
     """
-    active = {k: v for k, v in layers.items() if v is not None}
+    # Only include layers that have meaningful scores (not None, not 0 from API failures)
+    active = {k: v for k, v in layers.items() if v is not None and v[0] > 0}
+    
+    if not active:
+        # All layers unavailable or returned 0
+        return 0, []
+    
     total_weight = sum(_WEIGHTS[k] for k in active)
 
     weighted_sum = sum(

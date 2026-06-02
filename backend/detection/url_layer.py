@@ -40,17 +40,22 @@ async def analyze_url(url: str) -> Tuple[float, list[str], list[LayerResult]]:
     if gsb_score == 1.0 or haus_score == 1.0:
         final_score = 1.0
     else:
-        # Only include sub-checks that actually returned a score
+        # Only include sub-checks that returned meaningful scores (>0 or explicit 0 for legitimate)
+        # Exclude scores of 0 from API failures/timeouts since they don't represent actual cleanliness
         active = [
             (score, check)
             for (score, _), check in zip(results, _SUB_CHECKS)
-            if score is not None
+            if score is not None and score > 0
         ]
-        weighted_sum = sum(score * check.weight for score, check in active)
-        total_weight = sum(check.weight for _, check in active)
-        base_score = weighted_sum / total_weight if total_weight > 0 else 0.0
-        # RF score acts as a floor — never let reputation misses push below it
-        final_score = min(max(base_score, rf_score or 0.0), 1.0)
+        if not active:
+            # If all external checks failed, rely on RF score
+            final_score = rf_score or 0.0
+        else:
+            weighted_sum = sum(score * check.weight for score, check in active)
+            total_weight = sum(check.weight for _, check in active)
+            base_score = weighted_sum / total_weight if total_weight > 0 else 0.0
+            # RF score acts as a floor — never let reputation misses push below it
+            final_score = min(max(base_score, rf_score or 0.0), 1.0)
 
     # Collect reasons only from active sub-checks with meaningful scores
     reasons = [

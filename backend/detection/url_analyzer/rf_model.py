@@ -30,6 +30,9 @@ FEATURE_IMPORTANCE_ORDER = [
 SHORTENER_DOMAINS = {
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly",
     "buff.ly", "short.link", "rb.gy", "is.gd", "cutt.ly",
+    "cut-ly.com", "v.gd", "short.cm", "adf.ly", "link.ax",
+    "ping.fm", "u.to", "lnk.in", "go.gl", "tr.im",
+    "shorte.st", "snip.li", "trim.by", "url.st", "dwz.cn",
 }
 
 FEATURE_LABELS = {
@@ -107,7 +110,7 @@ def _extract_lexical_features(url: str) -> dict:
 
 class RFModelCheck(UrlSubCheck):
     name = "rf_model_b"
-    weight = 0.40
+    weight = 0.30
 
     def __init__(self, model_path: str | None = None) -> None:
         if model_path is None:

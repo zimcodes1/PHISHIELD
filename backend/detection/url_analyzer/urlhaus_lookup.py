@@ -39,7 +39,7 @@ except Exception as exc:
 
 class UrlHausLookup(UrlSubCheck):
     name = "url_haus_lookup"
-    weight = 0.15
+    weight = 0.25
     timeout_seconds = 5.0
 
     def __init__(self) -> None:

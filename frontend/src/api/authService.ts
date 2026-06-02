@@ -1,6 +1,6 @@
 import axios from "axios"
 import type { User, LoginResponse, UserStats, AnalysisResponse, HistoryResponse } from "./types"
-const API_URL = 'http://10.117.130.2:8000/api/v1'
+const API_URL = 'http://localhost:8000/api/v1'
 
 export const loginUser = async function (email: string, password: string) {
     const formData = new URLSearchParams()

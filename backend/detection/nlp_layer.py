@@ -48,7 +48,7 @@ Return exactly this JSON structure:
   "reasoning": "<one sentence explaining the top signal>"
 }"""
 
-_FALLBACK: Tuple[float, list[str]] = (0.3, ["NLP analysis unavailable"])
+_FALLBACK: Tuple[float, list[str]] = (0.0, ["NLP analysis unavailable"])
 
 # Best model on Groq free tier for classification: strong reasoning, 128k context
 _MODEL = "llama-3.3-70b-versatile"

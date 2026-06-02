@@ -48,7 +48,7 @@ except Exception as exc:
 
 class GoogleSafeBrowsingCheck(UrlSubCheck):
     name = "google_safe_browsing"
-    weight = 0.3
+    weight = 0.40
     timeout_seconds = 4.0
 
     def __init__(self) -> None:

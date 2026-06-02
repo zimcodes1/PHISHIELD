@@ -45,6 +45,14 @@ LURE_TOKENS = {
     "auth",
 }
 
+SHORTENER_INDICATORS = {
+    "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly",
+    "buff.ly", "short.link", "rb.gy", "is.gd", "cutt.ly",
+    "cut-ly.com", "v.gd", "short.cm", "adf.ly", "link.ax",
+    "ping.fm", "u.to", "lnk.in", "go.gl", "tr.im",
+    "shorte.st", "snip.li", "trim.by", "url.st", "dwz.cn",
+}
+
 BRAND_TOKENS = {
     "mtn",
     "airtel",
@@ -86,6 +94,7 @@ def score_url_heuristics(url: str, tier3_features: dict[str, int]) -> HeuristicR
     reasons: list[str] = []
 
     suspicious_tld = tld in SUSPICIOUS_TLDS
+    is_shortener = any(host == s or host.endswith(f".{s}") for s in SHORTENER_INDICATORS)
     lure_hits = sorted(token for token in LURE_TOKENS if token in text)
     brand_hits = sorted(token for token in BRAND_TOKENS if token in text)
     indexed_bad = tier3_features.get("GoogleIndex") == -1
@@ -93,6 +102,9 @@ def score_url_heuristics(url: str, tier3_features: dict[str, int]) -> HeuristicR
     low_traffic = tier3_features.get("WebsiteTraffic") in (-1, 0)
     young_domain = tier3_features.get("AgeofDomain") == -1
 
+    if is_shortener:
+        score += 0.30
+        reasons.append("URL uses known shortener service")
     if suspicious_tld:
         score += 0.25
         reasons.append(f"suspicious .{tld} top-level domain")
@@ -109,6 +121,9 @@ def score_url_heuristics(url: str, tier3_features: dict[str, int]) -> HeuristicR
         score += 0.15
         reasons.append("newly registered domain")
 
+    # Boost score for shortener + lure combination
+    if is_shortener and lure_hits:
+        score = max(score, 0.75)
     if suspicious_tld and lure_hits and (low_traffic or indexed_bad or dns_bad):
         score = max(score, 0.78)
     if brand_hits and lure_hits and domain not in HIGH_TRAFFIC_DOMAINS:
