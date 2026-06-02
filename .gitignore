@@ -8,6 +8,7 @@ backend/api/utils/__pycache__/
 backend/detection/url_analyzer/__pycache__/
 backend/detection/__pycache__/
 ml/uv.lock
-extension/
 backend/detection/email_analyzer/__pycache__/
 backend/models/email_rf_model.pkl
+extension/models/email_rf_model.zip
+extension/models/email_rf_model.onnx
