@@ -1,0 +1,13 @@
+frontend/node_modules
+backend/api/__pycache__/
+backend/database/__pycache__/
+backend/datbase.db
+backend/.env
+backend/api/routes/__pycache__/
+backend/api/utils/__pycache__/
+backend/detection/url_analyzer/__pycache__/
+backend/detection/__pycache__/
+ml/uv.lock
+extension/
+backend/detection/email_analyzer/__pycache__/
+backend/models/email_rf_model.pkl
