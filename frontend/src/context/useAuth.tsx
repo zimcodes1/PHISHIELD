@@ -61,6 +61,7 @@ export const UserProvider = ({children}:Props)=>{
         await loginUser(email, password).then((res)=>{
             if (res) {
                 localStorage.setItem('access_token', res.access_token)
+                localStorage.setItem('refresh_token', res.refresh_token)
                 setAccessToken(res.access_token)
                 navigate('/')
             }
@@ -82,6 +83,7 @@ export const UserProvider = ({children}:Props)=>{
 
     const logout = ()=>{
         localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
         setUser(null)
         setAccessToken(null)
