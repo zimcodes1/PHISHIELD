@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default function ScanForm({ onSubmit, loading }: Props) {
-	const [tab, setTab] = useState<Tab>("url");
+	const [tab, setTab] = useState<Tab>("email");
 	const [emailMode, setEmailMode] = useState<EmailMode>("manual");
 	const [url, setUrl] = useState("");
 	const [email, setEmail] = useState<EmailForm>({
