@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "PhishShield Extension",
+    "version": "1.0.0",
+    "description": "AI-powered phishing detection system for web browsers.",
+    "permissions": ["storage", "activeTab", "scripting", "tabs"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"],
+            "run_at": "document_end",
+            "all_frames": false
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["models/model_a.onnx"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "action": {
+        "default_popup": "index.html",
+        "default_icon": "images/logo.png",
+        "default_title": "PhishShield — Check if phishing"
+    }
+}
