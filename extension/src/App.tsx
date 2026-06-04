@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { LoadingState } from './components/LoadingState'
 import { ResultsPanel } from './components/ResultsPanel'
 import type { AnalysisResult, AnalysisUpdateNotification } from './types/messages'
+import { LogoIcon } from './components/Logo'
 
 type PopupState = 'idle' | 'loading' | 'results'
 
@@ -101,7 +102,7 @@ function App() {
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {state === 'idle' && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div className="text-4xl">🛡️</div>
+            <div className="text-4xl"><LogoIcon /></div>
             <p className="text-center text-sm text-gray-600">
               PhishShield is ready
             </p>
