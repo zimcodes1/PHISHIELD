@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from api.dependencies import get_current_user, get_db
@@ -10,6 +10,17 @@ from sqlalchemy.orm import Session
 from fastapi import status
 
 router = APIRouter(prefix='/api/v1/analyze', tags=["Analyser"])
+
+
+@router.post('/extension/url', response_model=AnalysisResponse)
+async def analyze_url_anonymous(request: URLRequest):
+    """Unauthenticated URL analysis for the browser extension. Results are not persisted."""
+    try:
+        scan_result = await run_url_pipeline(request)
+        scan_result.scan_id = uuid4()
+        return scan_result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post('/url', response_model=AnalysisResponse)

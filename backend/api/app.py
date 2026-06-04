@@ -16,11 +16,14 @@ cors_allowed_origins = [
     "https://phishield-ai.vercel.app",
 ]
 
+cors_allowed_origin_regex = r"chrome-extension://.*"
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_allowed_origins,
+    allow_origin_regex=cors_allowed_origin_regex,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=["*"]

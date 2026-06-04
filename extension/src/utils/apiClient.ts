@@ -33,7 +33,7 @@ export async function analyzeUrl(url: string): Promise<BackendAnalysisResponse> 
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
-    const response = await fetch(`${API_BASE}/analyze/url`, {
+    const response = await fetch(`${API_BASE}/analyze/extension/url`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
