@@ -1,0 +1,11 @@
+Name: Phishing Email Dataset
+Description:This dataset contains approx 82,500 emails; 42,891 spam and 39,595 legitimate emails
+Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset/code
+Licence: CC BY-SA 4.0
+Relative Path: ./notebooks/phising_email.csv
+
+Name: Phishing website Detector
+Description: This dataset contains 11,055 records with 31 features related to phishing websites.
+Source: https://www.kaggle.com/datasets/eswarchandt/phishing-website-detector
+Licence: Unknown
+Relative Path: ./notebooks/phishing_url.csv
