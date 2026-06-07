@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from api.dependencies import get_current_user, get_db
 from api.schemas import URLRequest, EmailRequest, AnalysisResponse, HistoryResponse
 from database.models import Scan, ScanType, User
-from detection.pipeline import run_url_pipeline, run_email_pipeline
+from detection.pipeline import run_url_pipeline, run_extension_url_pipeline, run_email_pipeline
 from detection.email_analyzer.eml_parser import EMLParseError, extract_email_request_from_eml
 from sqlalchemy.orm import Session
 from fastapi import status
@@ -16,7 +16,7 @@ router = APIRouter(prefix='/api/v1/analyze', tags=["Analyser"])
 async def analyze_url_anonymous(request: URLRequest):
     """Unauthenticated URL analysis for the browser extension. Results are not persisted."""
     try:
-        scan_result = await run_url_pipeline(request)
+        scan_result = await run_extension_url_pipeline(request)
         scan_result.scan_id = uuid4()
         return scan_result
     except Exception as e:

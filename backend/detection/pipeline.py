@@ -6,7 +6,7 @@ from typing import Optional
 from api.schemas import (
     AnalysisResponse, EmailRequest, LayerResult, URLRequest, Verdict,
 )
-from detection.url_layer import analyze_url
+from detection.url_layer import analyze_url, analyze_url_without_rf
 from detection.nlp_layer import analyze_nlp
 from detection.email_analyzer.header_analyzer import analyze_headers
 from detection.email_analyzer import analyze_email_rf
@@ -41,17 +41,14 @@ def _build_layer_result(
 def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int, list[str]]:
     """
     Weighted average over whichever layers ran.
-    Excludes skipped layers (None) and 0-scored layers (unavailable APIs) 
-    and redistributes their weight proportionally.
-    Returns (risk_score 0–100, top_3_reasons).
+    Excludes only skipped layers (None) — a score of 0 is a valid clean signal
+    and must be included so legitimate URLs don't get inflated scores.
     """
-    # Only include layers that have meaningful scores (not None, not 0 from API failures)
-    active = {k: v for k, v in layers.items() if v is not None and v[0] > 0}
-    
+    active = {k: v for k, v in layers.items() if v is not None}
+
     if not active:
-        # All layers unavailable or returned 0
         return 0, []
-    
+
     total_weight = sum(_WEIGHTS[k] for k in active)
 
     weighted_sum = sum(
@@ -60,7 +57,6 @@ def _ensemble(layers: Mapping[str, tuple[float, list[str]] | None]) -> tuple[int
     )
     risk_score = min(round(weighted_sum * 100), 100)
 
-    # Rank all reasons by the score of the layer that produced them, highest first
     ranked_reasons = [
         reason
         for _, (score, reasons) in sorted(active.items(), key=lambda x: x[1][0], reverse=True)
@@ -93,16 +89,50 @@ async def run_url_pipeline(request: URLRequest) -> AnalysisResponse:
         analyze_nlp(request.url),
     )
 
-    layers_data = {
+    layers_data: dict[str, Optional[tuple[float, list[str]]]] = {
         "url": (url_score, url_reasons),
-        "nlp": (nlp_score, nlp_reasons),
+        "nlp": (nlp_score, nlp_reasons) if nlp_score is not None else None,
     }
     risk_score, top_reasons = _ensemble(layers_data)
 
     layers_list = [
         _build_layer_result("URL + RF Model", _WEIGHTS["url"], url_score, url_reasons, url_sub_checks),
-        _build_layer_result("NLP",            _WEIGHTS["nlp"], nlp_score, nlp_reasons),
     ]
+    if nlp_score is not None:
+        layers_list.append(_build_layer_result("NLP", _WEIGHTS["nlp"], nlp_score, nlp_reasons))
+
+    return AnalysisResponse(
+        scan_id=uuid.uuid4(),
+        risk_score=risk_score,
+        verdict=_compute_verdict(risk_score),
+        top_reasons=top_reasons,
+        layers_list=layers_list,
+        timestamp=datetime.now(timezone.utc),
+    )
+
+
+async def run_extension_url_pipeline(request: URLRequest) -> AnalysisResponse:
+    """
+    Extension URL scan: reputation + NLP only (RF runs locally in the extension).
+    URL score of 0 means no reputation hits — pass it through so legitimate URLs
+    correctly pull the ensemble score down.
+    """
+    (url_score, url_reasons, url_sub_checks), (nlp_score, nlp_reasons) = await asyncio.gather(
+        analyze_url_without_rf(request.url),
+        analyze_nlp(request.url),
+    )
+
+    layers_data: dict[str, Optional[tuple[float, list[str]]]] = {
+        "url": (url_score, url_reasons),
+        "nlp": (nlp_score, nlp_reasons) if nlp_score is not None else None,
+    }
+    risk_score, top_reasons = _ensemble(layers_data)
+
+    layers_list = [
+        _build_layer_result("URL Reputation", _WEIGHTS["url"], url_score, url_reasons, url_sub_checks),
+    ]
+    if nlp_score is not None:
+        layers_list.append(_build_layer_result("NLP", _WEIGHTS["nlp"], nlp_score, nlp_reasons))
 
     return AnalysisResponse(
         scan_id=uuid.uuid4(),

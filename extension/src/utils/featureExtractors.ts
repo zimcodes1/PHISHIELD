@@ -11,7 +11,7 @@
 /**
  * Extract features from URL string alone (Tier 1)
  * Returns array of 6 values in order: [UsingIP, LongURL, ShortURL, Symbol@, PrefixSuffix-, SubDomains]
- * Feature values: 1 = phishing signal, -1 = legitimate signal, 0 = neutral
+ * Feature values mirror backend training: 1 = legitimate, -1 = phishing, 0 = suspicious/neutral
  */
 export function extractTier1Features(urlString: string): number[] {
   try {
@@ -20,13 +20,15 @@ export function extractTier1Features(urlString: string): number[] {
 
     const features: number[] = []
 
-    // [0] UsingIP: 1 if raw IPv4, -1 if domain
-    features.push(isIpAddress(hostname) ? 1 : -1)
+    // [0] UsingIP: -1 if raw IPv4, 1 if domain
+    features.push(isIpAddress(hostname) ? -1 : 1)
 
-    // [1] LongURL: 1 if length > 54, -1 otherwise
-    features.push(urlString.length > 54 ? 1 : -1)
+    // [1] LongURL: 1 if short, 0 if borderline, -1 if very long
+    if (urlString.length < 54) features.push(1)
+    else if (urlString.length <= 75) features.push(0)
+    else features.push(-1)
 
-    // [2] ShortURL: 1 if shortener detected, -1 otherwise
+    // [2] ShortURL: -1 if shortener detected, 1 otherwise
     const shortenerDomains = [
       'bit.ly', 'tinyurl.com', 'ow.ly', 'short.link', 'goo.gl',
       'tiny.cc', 'is.gd', 'buff.ly', 'adf.ly'
@@ -34,11 +36,11 @@ export function extractTier1Features(urlString: string): number[] {
     const isShortener = shortenerDomains.some(domain =>
       hostname.includes(domain) || urlString.includes(domain)
     )
-    features.push(isShortener ? 1 : -1)
+    features.push(isShortener ? -1 : 1)
 
-    // [3] Symbol@: 1 if @ in URL, -1 otherwise
+    // [3] Symbol@: -1 if @ in URL, 1 otherwise
     // @ symbol tricks browsers into treating pre-@ as credentials
-    features.push(urlString.includes('@') ? 1 : -1)
+    features.push(urlString.includes('@') ? -1 : 1)
 
     // [4] PrefixSuffix-: -1 if hyphen in domain, 1 otherwise
     // Legitimate brands rarely hyphenate primary domain

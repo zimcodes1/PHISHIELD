@@ -7,6 +7,7 @@ import { extractTier1Features, extractTier2Features, mergeFeatures, getNeutralDo
 import type { DomInfo } from './utils/featureExtractors'
 import { loadOnnxModel, runInference, isModelLoaded } from './utils/onnxInference'
 import { analyzeUrl } from './utils/apiClient'
+import type { BackendAnalysisResponse, LayerResult } from './utils/apiClient'
 import { getAnalysisResult, setAnalysisResult, clearAnalysisResult } from './utils/storage'
 import { setBadge, clearBadge } from './utils/badge'
 import type { AnalysisResult, ExtractDomFeaturesRequest, InjectBannerRequest } from './types/messages'
@@ -215,22 +216,43 @@ function mergePhase1Results(
   tabId: number,
   url: string,
   modelAScore: number,
-  backendResult: any
+  backendResult: BackendAnalysisResponse
 ): AnalysisResult {
-  // Combine scores: Model A (30%) + Backend (70%)
-  const combinedScore = modelAScore * 0.3 + (backendResult.risk_score / 100) * 0.7
+  const adjustedRf = applyUrlAccuracyAdjustments(url, modelAScore)
+  const reputationLayer = backendResult.layers_list.find((layer) =>
+    layer.name.toLowerCase().includes('url')
+  )
+  const nlpLayer = backendResult.layers_list.find((layer) =>
+    layer.name.toLowerCase() === 'nlp'
+  )
+
+  const urlLayerScore = combineUrlLayerScore(adjustedRf.score, reputationLayer)
+  const nlpScore = nlpLayer?.score ?? null
+  const layers: Array<{ score: number; weight: number }> = [
+    { score: urlLayerScore, weight: 0.40 },
+  ]
+  if (nlpScore !== null) layers.push({ score: nlpScore, weight: 0.30 })
+  const combinedScore = ensembleScore(layers)
 
   // Determine verdict from combined score
   let verdict: AnalysisResult['verdict']
-  if (combinedScore >= 0.7) verdict = 'Phishing'
-  else if (combinedScore >= 0.4) verdict = 'Suspicious'
+  if (combinedScore >= 0.6) verdict = 'Phishing'
+  else if (combinedScore >= 0.35) verdict = 'Suspicious'
   else verdict = 'Clean'
 
-  // Merge reasons: Model A + backend top reasons
+  const reputationReasons = reputationLayer?.sub_checks
+    ?.flatMap((check) => check.score >= 0.3 ? check.reasons : [])
+    ?? []
+
   const reasons = [
-    `Local analysis: ${(modelAScore * 100).toFixed(0)}%`,
-    ...backendResult.top_reasons.slice(0, 2) // Top 2 backend reasons
-  ].slice(0, 3) // Limit to 3 total
+    ...(adjustedRf.score >= 0.5
+      ? [`Local RF analysis: ${(adjustedRf.score * 100).toFixed(0)}% phishing likelihood`]
+      : []),
+    ...adjustedRf.reasons,
+    ...reputationReasons,
+    ...backendResult.top_reasons
+  ].filter((reason, index, allReasons) => reason && allReasons.indexOf(reason) === index)
+    .slice(0, 3)
 
   return {
     tabId,
@@ -242,6 +264,134 @@ function mergePhase1Results(
     phase2Pending: false
   }
 }
+
+function combineUrlLayerScore(rfScore: number, reputationLayer?: LayerResult): number {
+  const subChecks = reputationLayer?.sub_checks ?? []
+  const confirmedThreat = subChecks.some((check) =>
+    (check.name === 'google_safe_browsing' || check.name === 'url_haus_lookup') &&
+    check.score >= 1.0
+  )
+
+  if (confirmedThreat) return 1.0
+
+  const activeChecks = subChecks.filter((check) => check.score > 0)
+  if (activeChecks.length === 0) return clamp01(rfScore)
+
+  const totalWeight = activeChecks.reduce((sum, check) => sum + check.weight, 0)
+  const reputationScore = totalWeight > 0
+    ? activeChecks.reduce((sum, check) => sum + check.score * check.weight, 0) / totalWeight
+    : 0
+
+  return clamp01(Math.max(reputationScore, rfScore))
+}
+
+function ensembleScore(layers: Array<{ score: number; weight: number }>): number {
+  // All layers are active — score of 0 is a valid clean signal, do not filter
+  if (layers.length === 0) return 0
+  const totalWeight = layers.reduce((sum, layer) => sum + layer.weight, 0)
+  return clamp01(
+    layers.reduce((sum, layer) => sum + layer.score * (layer.weight / totalWeight), 0)
+  )
+}
+
+function applyUrlAccuracyAdjustments(url: string, modelScore: number): { score: number; reasons: string[] } {
+  const heuristic = scoreUrlHeuristics(url)
+  return {
+    score: clamp01(Math.max(modelScore, heuristic.score)),
+    reasons: heuristic.reasons
+  }
+}
+
+function scoreUrlHeuristics(urlString: string): { score: number; reasons: string[] } {
+  let url: URL
+  try {
+    url = new URL(urlString)
+  } catch {
+    url = new URL(`https://${urlString}`)
+  }
+
+  const host = url.hostname.toLowerCase()
+  const domain = registeredDomain(host)
+  const tld = domain.includes('.') ? domain.split('.').pop() ?? '' : ''
+  const text = decodeURIComponent(`${host} ${url.pathname} ${url.search}`).toLowerCase()
+
+  if (HIGH_TRAFFIC_DOMAINS.has(domain)) return { score: 0, reasons: [] }
+
+  let score = 0
+  const reasons: string[] = []
+  const suspiciousTld = SUSPICIOUS_TLDS.has(tld)
+  const isShortener = SHORTENER_DOMAINS.some((shortener) =>
+    host === shortener || host.endsWith(`.${shortener}`)
+  )
+  const lureHits = LURE_TOKENS.filter((token) => text.includes(token)).sort()
+  const brandHits = BRAND_TOKENS.filter((token) => text.includes(token)).sort()
+
+  if (isShortener) {
+    score += 0.30
+    reasons.push('URL uses known shortener service')
+  }
+  if (suspiciousTld) {
+    score += 0.25
+    reasons.push(`suspicious .${tld} top-level domain`)
+  }
+  if (lureHits.length > 0) {
+    score += Math.min(0.35, 0.12 * lureHits.length)
+    reasons.push(`phishing lure terms in URL: ${lureHits.slice(0, 3).join(', ')}`)
+  }
+  if (brandHits.length > 0 && !brandHits.some((token) => domain.includes(token))) {
+    score += 0.25
+    reasons.push(`brand lure outside registered domain: ${brandHits.slice(0, 2).join(', ')}`)
+  }
+
+  if (isShortener && lureHits.length > 0) score = Math.max(score, 0.75)
+  if (suspiciousTld && lureHits.length > 0) score = Math.max(score, 0.78)
+  if (brandHits.length > 0 && lureHits.length > 0 && !HIGH_TRAFFIC_DOMAINS.has(domain)) {
+    score = Math.max(score, 0.72)
+  }
+
+  return { score: clamp01(score), reasons: reasons.slice(0, 3) }
+}
+
+function registeredDomain(hostname: string): string {
+  const parts = hostname.replace(/\.$/, '').split('.').filter(Boolean)
+  if (parts.length <= 2) return parts.join('.')
+  return parts.slice(-2).join('.')
+}
+
+function clamp01(value: number): number {
+  return Math.min(Math.max(value, 0), 1)
+}
+
+const SUSPICIOUS_TLDS = new Set([
+  'xyz', 'top', 'icu', 'cyou', 'click', 'rest', 'cam', 'buzz',
+  'monster', 'quest', 'tk', 'ml', 'ga', 'cf', 'gq'
+])
+
+const LURE_TOKENS = [
+  'free', 'gift', 'bonus', 'promo', 'reward', 'airdrop', 'claim',
+  'giveaway', 'data', 'bundle', 'verify', 'verification', 'login',
+  'signin', 'account', 'password', 'secure', 'security', 'update',
+  'wallet', 'auth'
+]
+
+const BRAND_TOKENS = [
+  'mtn', 'airtel', 'glo', 'paypal', 'google', 'facebook', 'instagram',
+  'whatsapp', 'microsoft', 'apple', 'netflix', 'binance', 'opay',
+  'gtbank', 'gtb', 'zenith', 'accessbank'
+]
+
+const SHORTENER_DOMAINS = [
+  'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'buff.ly',
+  'short.link', 'rb.gy', 'is.gd', 'cutt.ly', 'cut-ly.com', 'v.gd',
+  'short.cm', 'adf.ly', 'link.ax', 'ping.fm', 'u.to', 'lnk.in',
+  'go.gl', 'tr.im', 'shorte.st', 'snip.li', 'trim.by', 'url.st', 'dwz.cn'
+]
+
+const HIGH_TRAFFIC_DOMAINS = new Set([
+  'google.com', 'youtube.com', 'facebook.com', 'instagram.com',
+  'whatsapp.com', 'microsoft.com', 'apple.com', 'netflix.com',
+  'paypal.com', 'amazon.com', 'x.com', 'twitter.com', 'github.com'
+])
 
 /**
  * Inject warning banner into the tab

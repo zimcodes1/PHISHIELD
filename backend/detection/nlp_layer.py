@@ -48,7 +48,8 @@ Return exactly this JSON structure:
   "reasoning": "<one sentence explaining the top signal>"
 }"""
 
-_FALLBACK: Tuple[float, list[str]] = (0.0, ["NLP analysis unavailable"])
+_FALLBACK: Tuple[float, list[str]] = (0.0, [])
+_UNAVAILABLE: Tuple[None, list[str]] = (None, [])
 
 # Best model on Groq free tier for classification: strong reasoning, 128k context
 _MODEL = "llama-3.3-70b-versatile"
@@ -63,7 +64,7 @@ async def analyze_nlp(text: str) -> Tuple[float, list[str]]:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         logger.warning("GROQ_API_KEY not set — NLP layer skipped")
-        return _FALLBACK
+        return _UNAVAILABLE
 
     try:
         client = AsyncGroq(api_key=api_key)
@@ -108,7 +109,7 @@ async def analyze_nlp(text: str) -> Tuple[float, list[str]]:
 
     except json.JSONDecodeError as e:
         logger.error("NLP layer parse error: %s", e)
-        return _FALLBACK
+        return _UNAVAILABLE
     except Exception as e:
         logger.error("NLP layer error: %s", e)
-        return _FALLBACK
+        return _UNAVAILABLE
