@@ -12,3 +12,7 @@ backend/detection/email_analyzer/__pycache__/
 backend/models/email_rf_model.pkl
 extension/models/email_rf_model.zip
 extension/models/email_rf_model.onnx
+extension/dist.crx
+extension/dist.pem
+.gitignore
+extension/src/utils/apiClient.ts

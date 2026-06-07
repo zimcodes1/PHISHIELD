@@ -4,7 +4,7 @@
  * Timeout: 10 seconds
  */
 
-const API_BASE = 'http://localhost:8000/api/v1'
+const API_BASE = 'https://phishield-backend.vercel.app/api/v1'
 const TIMEOUT_MS = 10000
 
 export interface BackendAnalysisResponse {
