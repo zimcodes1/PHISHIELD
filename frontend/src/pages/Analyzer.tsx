@@ -86,7 +86,7 @@ export default function AnalyzerPage() {
       </div>
 
       {/* Scan form */}
-      <div className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="glass-card rounded-2xl p-6 space-y-4">
         <ScanForm onSubmit={handleSubmit} loading={loading} />
         {loading && <Preloader message="Analysis in progress..." />}
         {error && <Alert variant="error" message={error} onDismiss={() => setError(null)} />}
@@ -97,7 +97,7 @@ export default function AnalyzerPage() {
         <div className="space-y-5">
 
           {/* Score + verdict */}
-          <div className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center gap-6">
+          <div className="glass-card rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6">
             <ScoreGauge score={result.risk_score} />
             <div className="flex-1 space-y-3">
               <VerdictBadge verdict={normaliseVerdict(result.verdict)} />
@@ -117,7 +117,7 @@ export default function AnalyzerPage() {
 
           {/* Top reasons */}
           {result.top_reasons.length > 0 && (
-            <div className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="glass-card rounded-2xl p-6 space-y-3">
               <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
                 <i className="bx bx-list-ul text-brand-500 text-lg" /> Top Reasons
               </h2>
@@ -127,7 +127,7 @@ export default function AnalyzerPage() {
 
           {/* Layer breakdown */}
           {result.layers_list.length > 0 && (
-            <div className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="glass-card rounded-2xl p-6 space-y-3">
               <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
                 <i className="bx bx-layer text-brand-500 text-lg" /> Layer Breakdown
               </h2>

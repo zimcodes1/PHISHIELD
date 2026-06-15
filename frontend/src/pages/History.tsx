@@ -122,12 +122,12 @@ export default function HistoryPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Scans", value: stats.total, icon: "bx-scan", color: "text-brand-500" },
-          { label: "Phishing Blocked", value: stats.phishing, icon: "bx-shield-x", color: "text-danger" },
-          { label: "Suspicious", value: stats.suspicious, icon: "bx-error", color: "text-caution" },
-          { label: "Clean", value: stats.clean, icon: "bx-check-shield", color: "text-safe" },
-        ].map(({ label, value, icon, color }) => (
-          <div key={label} className="bg-canvas border border-outline rounded-2xl px-5 py-4 shadow-sm">
+          { label: "Total Scans", value: stats.total, icon: "bx-scan", color: "text-brand-500", accent: 'blue-500' },
+          { label: "Phishing Blocked", value: stats.phishing, icon: "bx-shield-x", color: "text-danger", accent: 'red-600'  },
+          { label: "Suspicious", value: stats.suspicious, icon: "bx-error", color: "text-caution", accent: 'orange-600'  },
+          { label: "Clean", value: stats.clean, icon: "bx-check-shield", color: "text-safe", accent: 'green-500'  },
+        ].map(({ label, value, icon, color, accent }) => (
+          <div key={label} className={` bg-${accent}/30 backdrop-blur-xs rounded-2xl px-5 py-4 shadow-sm`}>
             <i className={`bx ${icon} text-2xl ${color}`} />
             <p className="text-2xl font-bold text-ink mt-1">{value}</p>
             <p className="text-xs text-ink-muted mt-0.5">{label}</p>
@@ -152,11 +152,11 @@ export default function HistoryPage() {
       {error && <Alert variant="error" message={error} onDismiss={() => setError(null)} />}
 
       {loading ? (
-        <div className="bg-canvas border border-outline rounded-2xl shadow-sm">
+        <div className="glass-card rounded-2xl shadow-sm">
           <Preloader message="Loading scan history..." />
         </div>
       ) : (
-        <div className="bg-canvas border border-outline rounded-2xl shadow-sm overflow-hidden max-sm:overflow-scroll max-sm:mb-10">
+        <div className="glass-card rounded-2xl shadow-sm overflow-hidden max-sm:overflow-scroll max-sm:mb-10">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-outline bg-subtle text-ink-muted text-xs uppercase tracking-wide">

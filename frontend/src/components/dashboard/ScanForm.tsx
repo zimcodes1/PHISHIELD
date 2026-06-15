@@ -65,7 +65,7 @@ export default function ScanForm({ onSubmit, loading }: Props) {
 		<form onSubmit={handleSubmit} className="space-y-4">
 			{/* Main tab switcher: URL / Email */}
 			<div className="flex gap-1 bg-subtle border border-outline rounded-xl p-1 w-fit max-sm:w-full max-sm:justify-between">
-				{(["url", "email"] as Tab[]).map((t) => (
+				{(["email", "url"] as Tab[]).map((t) => (
 					<button
 						key={t}
 						type="button"
@@ -85,16 +85,40 @@ export default function ScanForm({ onSubmit, loading }: Props) {
 			</div>
 
 			{tab === "url" ? (
-				<div className="flex gap-3">
-					<input
-						type="text"
-						required
-						value={url}
-						onChange={(e) => setUrl(e.target.value)}
-						placeholder="https://suspicious-site.com/login"
-						className={`${inputClass} flex-1`}
-					/>
-					<SubmitButton loading={loading} />
+				<div className="flex gap-3 flex-col">
+					<span className="flex gap-3">
+						<input
+							type="text"
+							required
+							value={url}
+							onChange={(e) => setUrl(e.target.value)}
+							placeholder="https://suspicious-site.com/login"
+							className={`${inputClass} flex-1`}
+						/>
+						<SubmitButton loading={loading} />
+					</span>
+
+					{/* Chrome extension promo — keeps URL tab height matching email tab */}
+					<a
+						href="https://github.com/zimcodes1/PHISHIELD/releases/tag/v1.0.0"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex items-center gap-3 px-4 py-3 rounded-xl border border-outline bg-subtle hover:border-brand-300 hover:bg-brand-50/40 transition group"
+					>
+						<img
+							src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Chrome_icon_%28February_2022%29.svg"
+							alt="Chrome"
+							className="w-5 h-5 shrink-0"
+						/>
+						<span className="text-sm text-ink-muted">
+							Prefer automatic scanning?{" "}
+							<span className="text-brand-500 group-hover:text-brand-600 font-medium transition">
+								Install the Chrome extension
+							</span>
+							{" "}to check every URL you visit in real time.
+						</span>
+						<i className="bx bx-link-external text-brand-400 ml-auto shrink-0 text-base" />
+					</a>
 				</div>
 			) : (
 				<div className="space-y-4">

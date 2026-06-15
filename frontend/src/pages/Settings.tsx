@@ -86,7 +86,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Profile ── */}
-      <section className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-5">
+      <section className="glass-card rounded-2xl p-6 space-y-5">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Profile</h2>
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-md shadow-brand-200">
@@ -107,7 +107,7 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Scan stats ── */}
-      <section className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
+      <section className="glass-card rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Scan Activity</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {statCards.map(({ label, value, icon, color, bg }) => (
@@ -123,7 +123,7 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Update password ── */}
-      <section className="bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
+      <section className="glass-card rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Update Password</h2>
         <form onSubmit={handleUpdatePassword} className="space-y-3" noValidate>
           {(["current", "next", "confirm"] as const).map((field) => {
@@ -178,7 +178,7 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Session / Logout ── */}
-      <section className="max-sm:mb-10 bg-canvas border border-outline rounded-2xl p-6 shadow-sm space-y-4">
+      <section className="max-sm:mb-10 glass-card rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wide">Session</h2>
         <p className="text-sm text-ink-muted">
           Signing out will clear your session. You'll need to log in again to access your dashboard.
