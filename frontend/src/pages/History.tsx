@@ -122,12 +122,12 @@ export default function HistoryPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Scans", value: stats.total, icon: "bx-scan", color: "text-brand-500", accent: 'blue-500' },
-          { label: "Phishing Blocked", value: stats.phishing, icon: "bx-shield-x", color: "text-danger", accent: 'red-600'  },
-          { label: "Suspicious", value: stats.suspicious, icon: "bx-error", color: "text-caution", accent: 'orange-600'  },
-          { label: "Clean", value: stats.clean, icon: "bx-check-shield", color: "text-safe", accent: 'green-500'  },
+          { label: "Total Scans", value: stats.total, icon: "bx-scan", color: "text-brand-500", accent: 'bg-blue-500/30' },
+          { label: "Phishing Blocked", value: stats.phishing, icon: "bx-shield-x", color: "text-danger", accent: 'bg-red-600/30'  },
+          { label: "Suspicious", value: stats.suspicious, icon: "bx-error", color: "text-caution", accent: 'bg-orange-600/30'  },
+          { label: "Clean", value: stats.clean, icon: "bx-check-shield", color: "text-safe", accent: 'bg-green-500/30'  },
         ].map(({ label, value, icon, color, accent }) => (
-          <div key={label} className={` bg-${accent}/30 backdrop-blur-xs rounded-2xl px-5 py-4 shadow-sm`}>
+          <div key={label} className={`${accent} backdrop-blur-xs rounded-2xl px-5 py-4 shadow-sm`}>
             <i className={`bx ${icon} text-2xl ${color}`} />
             <p className="text-2xl font-bold text-ink mt-1">{value}</p>
             <p className="text-xs text-ink-muted mt-0.5">{label}</p>
